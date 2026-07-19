@@ -78,7 +78,7 @@ const [needsTransport, setNeedsTransport] = useState(null);
             alt="לוגו"
             className="w-20 h-20 object-contain flex-shrink-0"
           />
-          />
+        
         </div>
       </div>
 
