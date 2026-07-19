@@ -201,29 +201,106 @@ function AdminDashboard() {
                     if (activeTab === "alone") return !g.needs_transport;
                     return g.needs_transport && g.pickup_point === activeTab;
                   })
-                  .map((g) => (
-                    <tr key={g.id} className="border-t border-white/10">
-                      <td className="p-3">{g.name}</td>
-                      <td className="p-3">{g.phone || "—"}</td>
-                      <td className="p-3">{g.birth_date || "—"}</td>
-                      <td className="p-3">{g.ticket_count || 1}</td>
-                      <td className="p-3 text-xs">
-                        {(g.ticket_details || []).map((t, i) => (
-                          <div key={i} className="mb-1">
-                            {t.name} {t.phone ? `(${t.phone})` : ""} {t.birthDate ? `— ${t.birthDate}` : ""}
-                          </div>
-                        ))}
-                        {(!g.ticket_details || g.ticket_details.length === 0) && "—"}
-                      </td>
-                      <td className="p-3">{g.needs_transport ? g.pickup_point : "מגיע/ה לבד"}</td>
+{selectedEvent && (() => {
+        const filtered = guests.filter((g) => {
+          if (activeTab === "all") return true;
+          if (activeTab === "alone") return !g.needs_transport;
+          return g.needs_transport && g.pickup_point === activeTab;
+        });
+
+        // הופכים כל הרשמה (עם המלווים שלה) לרשימה שטוחה, שורה אחת לכל אדם
+        const flatRows = [];
+        filtered.forEach((g) => {
+          flatRows.push({
+            key: g.id + "-main",
+            name: g.name,
+            phone: g.phone,
+            birthDate: g.birth_date,
+            pickup: g.needs_transport ? g.pickup_point : "מגיע/ה לבד",
+            groupWith: null,
+          });
+          (g.ticket_details || []).forEach((t, i) => {
+            flatRows.push({
+              key: g.id + "-" + i,
+              name: t.name || "—",
+              phone: t.phone || "—",
+              birthDate: t.birthDate || "—",
+              pickup: g.needs_transport ? g.pickup_point : "מגיע/ה לבד",
+              groupWith: g.name,
+            });
+          });
+        });
+
+        const totalPeople = filtered.reduce((sum, g) => sum + (g.ticket_count || 1), 0);
+
+        return (
+          <div>
+            <h2 className="font-semibold mb-3">נרשמים ל-{selectedEvent.name}</h2>
+
+            {/* טאבים */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              <button
+                onClick={() => setActiveTab("all")}
+                className={`px-3 py-2 rounded-lg text-xs font-semibold ${activeTab === "all" ? "bg-white text-black" : "bg-white/5 border border-white/10"}`}
+              >
+                הכל ({guests.reduce((s, g) => s + (g.ticket_count || 1), 0)})
+              </button>
+              {(selectedEvent.pickup_points || []).map((p) => {
+                const count = guests
+                  .filter((g) => g.needs_transport && g.pickup_point === p)
+                  .reduce((s, g) => s + (g.ticket_count || 1), 0);
+                return (
+                  <button
+                    key={p}
+                    onClick={() => setActiveTab(p)}
+                    className={`px-3 py-2 rounded-lg text-xs font-semibold ${activeTab === p ? "bg-white text-black" : "bg-white/5 border border-white/10"}`}
+                  >
+                    {p} ({count})
+                  </button>
+                );
+              })}
+              <button
+                onClick={() => setActiveTab("alone")}
+                className={`px-3 py-2 rounded-lg text-xs font-semibold ${activeTab === "alone" ? "bg-white text-black" : "bg-white/5 border border-white/10"}`}
+              >
+                מגיעים לבד ({guests.filter((g) => !g.needs_transport).reduce((s, g) => s + (g.ticket_count || 1), 0)})
+              </button>
+            </div>
+
+            {/* סיכום מספרי */}
+            <div className="flex gap-4 mb-3 text-xs text-white/60">
+              <span>הרשמות: <b className="text-white">{filtered.length}</b></span>
+              <span>סה״כ אנשים: <b className="text-white">{totalPeople}</b></span>
+            </div>
+
+            {/* טבלה שטוחה */}
+            <div className="overflow-x-auto rounded-xl border border-white/10">
+              <table className="w-full text-sm text-right">
+                <thead className="bg-white/10 text-white/60 text-xs">
+                  <tr>
+                    <th className="p-3">שם</th>
+                    <th className="p-3">טלפון</th>
+                    <th className="p-3">תאריך לידה</th>
+                    <th className="p-3">מגיע/ה עם</th>
+                    <th className="p-3">הסעה</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {flatRows.map((r) => (
+                    <tr key={r.key} className="border-t border-white/10">
+                      <td className="p-3">{r.name}</td>
+                      <td className="p-3">{r.phone}</td>
+                      <td className="p-3">{r.birthDate}</td>
+                      <td className="p-3 text-white/50">{r.groupWith || "—"}</td>
+                      <td className="p-3">{r.pickup}</td>
                     </tr>
                   ))}
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      )}
-     </div> 
+        );
+      })()} 
   );
 }
 
