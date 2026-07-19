@@ -186,10 +186,18 @@ const [needsTransport, setNeedsTransport] = useState(null);
                     type="tel"
                     className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm outline-none mb-2"
                   />
+                  <label className="block text-[10px] text-white/40 mb-1">תאריך לידה</label>
                   <input
                     value={t.birthDate}
                     onChange={(e) => updateTicketDetail(i, "birthDate", e.target.value)}
                     type="date"
+                    className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm outline-none mb-2"
+                  />
+                  <label className="block text-[10px] text-white/40 mb-1">כתובת מגורים</label>
+                  <input
+                    value={t.address}
+                    onChange={(e) => updateTicketDetail(i, "address", e.target.value)}
+                    placeholder="עיר, רחוב ומספר"
                     className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm outline-none"
                   />
                 </div>
