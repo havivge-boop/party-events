@@ -134,13 +134,27 @@ function AdminDashboard() {
       {selectedEvent && (
         <div>
           <h2 className="font-semibold mb-3">נרשמים ל-{selectedEvent.name} ({guests.length})</h2>
-          <div className="flex flex-col gap-2">
-            {guests.map((g) => (
-              <div key={g.id} className="rounded-xl bg-white/5 border border-white/10 p-3 text-sm flex justify-between">
-                <span>{g.name}</span>
-                <span className="text-white/50">{g.needs_transport ? `הסעה: ${g.pickup_point}` : "מגיע/ה לבד"}</span>
-              </div>
-            ))}
+         <div className="overflow-x-auto rounded-xl border border-white/10">
+            <table className="w-full text-sm text-right">
+              <thead className="bg-white/10 text-white/60 text-xs">
+                <tr>
+                  <th className="p-3">שם</th>
+                  <th className="p-3">טלפון</th>
+                  <th className="p-3">כרטיסים</th>
+                  <th className="p-3">הסעה</th>
+                </tr>
+              </thead>
+              <tbody>
+                {guests.map((g) => (
+                  <tr key={g.id} className="border-t border-white/10">
+                    <td className="p-3">{g.name}</td>
+                    <td className="p-3">{g.phone || "—"}</td>
+                    <td className="p-3">{g.ticket_count || 1}</td>
+                    <td className="p-3">{g.needs_transport ? g.pickup_point : "מגיע/ה לבד"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
