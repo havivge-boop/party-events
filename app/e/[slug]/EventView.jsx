@@ -82,8 +82,7 @@ export default function EventView({ event }) {
 
       {/* תיאור ופרטים חשובים */}
       <div className="px-5 mt-6">
-        <p className="text-[15px] leading-relaxed text-white/80">{event.description}</p>
-        {event.important_info && (
+<p className="text-[15px] leading-relaxed text-white/80 whitespace-pre-line">{event.description}</p>        {event.important_info && (
           <div className="mt-4 rounded-xl bg-white/5 border border-white/10 p-4 text-sm text-white/70 leading-relaxed">
             <span className="block text-white font-semibold mb-1">חשוב לדעת</span>
             {event.important_info}
