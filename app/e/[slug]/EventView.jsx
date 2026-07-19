@@ -73,7 +73,7 @@ const [needsTransport, setNeedsTransport] = useState(null);
             {event.name}
           </h1>
           <img
-            src="https://cdn.phototourl.com/free/2026-07-19-b529f678-5d28-45c5-8c2f-83e80768c1a0.png"
+            src="https://i.imgur.com/zMbWWf8.png"
             alt="לוגו"
             className="w-16 h-16 object-contain flex-shrink-0"
           />
