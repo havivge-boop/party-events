@@ -39,6 +39,7 @@ function AdminDashboard() {
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [guests, setGuests] = useState([]);
+  const [activeTab, setActiveTab] = useState("all");
 
   // שדות הטופס ליצירת אירוע חדש
   const [form, setForm] = useState({
