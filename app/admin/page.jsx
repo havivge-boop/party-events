@@ -162,6 +162,22 @@ function AdminDashboard() {
             </button>
           </div>
 
+        {/* סיכום מספרי */}
+          {(() => {
+            const filtered = guests.filter((g) => {
+              if (activeTab === "all") return true;
+              if (activeTab === "alone") return !g.needs_transport;
+              return g.needs_transport && g.pickup_point === activeTab;
+            });
+            const totalTickets = filtered.reduce((sum, g) => sum + (g.ticket_count || 1), 0);
+            return (
+              <div className="flex gap-4 mb-3 text-xs text-white/60">
+                <span>נרשמים: <b className="text-white">{filtered.length}</b></span>
+                <span>סה״כ כרטיסים: <b className="text-white">{totalTickets}</b></span>
+              </div>
+            );
+          })()}
+
           {/* טבלה מסוננת לפי הטאב */}
           <div className="overflow-x-auto rounded-xl border border-white/10">
             <table className="w-full text-sm text-right">
