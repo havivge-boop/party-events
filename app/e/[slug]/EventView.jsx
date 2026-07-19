@@ -64,7 +64,7 @@ const [needsTransport, setNeedsTransport] = useState(null);
 
   return (
     <div className="min-h-screen bg-[#0B0B10] text-[#F5F3EF] pb-28" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-      <img src="https://i.postimg.cc/NFzjDpzM/1000159751-removebg-preview.png" alt="בדיקה" className="w-32 h-32 bg-red-500" />
+      
       {/* HERO - תמונת הקאבר והשם */}
       <div className="relative h-[52vh] min-h-[380px] w-full overflow-hidden">
         <img src={event.cover_image} alt="cover" className="absolute inset-0 h-full w-full object-cover" />
@@ -74,9 +74,10 @@ const [needsTransport, setNeedsTransport] = useState(null);
             {event.name}
           </h1>
           <img
-            src="https://i.imgur.com/zMbWWf8.png"
+            src="https://i.postimg.cc/NFzjDpzM/1000159751-removebg-preview.png"
             alt="לוגו"
-            className="w-16 h-16 object-contain flex-shrink-0"
+            className="w-20 h-20 object-contain flex-shrink-0"
+          />
           />
         </div>
       </div>
