@@ -219,6 +219,7 @@ function AdminDashboard() {
                       <td className="p-3">{r.name}</td>
                       <td className="p-3">{r.phone}</td>
                       <td className="p-3">{r.birthDate}</td>
+                      <td className="p-3">{r.address || "—"}</td>
                       <td className="p-3 text-white/50">{r.groupWith || "—"}</td>
                       <td className="p-3">{r.pickup}</td>
                     </tr>
