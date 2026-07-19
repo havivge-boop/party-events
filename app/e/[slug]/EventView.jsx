@@ -47,9 +47,12 @@ const [needsTransport, setNeedsTransport] = useState(null);
       name: name.trim(),
       ticket_count: ticketCount,
       phone: phone.trim(),
-      birth_date: birthDate,      needs_transport: needsTransport,
+      birth_date: birthDate,
+      ticket_details: ticketDetails,
+      needs_transport: needsTransport,
       pickup_point: needsTransport ? pickup : null,
     });
+
     setSaving(false);
     if (error) {
       setError("משהו השתבש, נסו שוב");
