@@ -186,7 +186,16 @@ function AdminDashboard() {
                     <tr key={g.id} className="border-t border-white/10">
                       <td className="p-3">{g.name}</td>
                       <td className="p-3">{g.phone || "—"}</td>
+                      <td className="p-3">{g.birth_date || "—"}</td>
                       <td className="p-3">{g.ticket_count || 1}</td>
+                      <td className="p-3 text-xs">
+                        {(g.ticket_details || []).map((t, i) => (
+                          <div key={i} className="mb-1">
+                            {t.name} {t.phone ? `(${t.phone})` : ""} {t.birthDate ? `— ${t.birthDate}` : ""}
+                          </div>
+                        ))}
+                        {(!g.ticket_details || g.ticket_details.length === 0) && "—"}
+                      </td>
                       <td className="p-3">{g.needs_transport ? g.pickup_point : "מגיע/ה לבד"}</td>
                     </tr>
                   ))}
