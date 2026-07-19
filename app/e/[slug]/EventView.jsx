@@ -107,7 +107,13 @@ const [needsTransport, setNeedsTransport] = useState(null);
             placeholder="איך קוראים לך?"
             className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm outline-none focus:border-[#FF3EA5]"
           />
-
+<label className="block text-xs text-white/50 mb-1.5 mt-4">תאריך לידה</label>
+          <input
+            value={birthDate}
+            onChange={(e) => setBirthDate(e.target.value)}
+            type="date"
+            className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm outline-none focus:border-[#FF3EA5]"
+          />
           <label className="block text-xs text-white/50 mb-1.5 mt-4">מספר טלפון</label>
           <input
             value={phone}
