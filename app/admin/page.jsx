@@ -136,7 +136,34 @@ function AdminDashboard() {
       {selectedEvent && (
         <div>
           <h2 className="font-semibold mb-3">נרשמים ל-{selectedEvent.name} ({guests.length})</h2>
-         <div className="overflow-x-auto rounded-xl border border-white/10">
+
+          {/* טאבים */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            <button
+              onClick={() => setActiveTab("all")}
+              className={`px-3 py-2 rounded-lg text-xs font-semibold ${activeTab === "all" ? "bg-white text-black" : "bg-white/5 border border-white/10"}`}
+            >
+              הכל
+            </button>
+            {(selectedEvent.pickup_points || []).map((p) => (
+              <button
+                key={p}
+                onClick={() => setActiveTab(p)}
+                className={`px-3 py-2 rounded-lg text-xs font-semibold ${activeTab === p ? "bg-white text-black" : "bg-white/5 border border-white/10"}`}
+              >
+                {p}
+              </button>
+            ))}
+            <button
+              onClick={() => setActiveTab("alone")}
+              className={`px-3 py-2 rounded-lg text-xs font-semibold ${activeTab === "alone" ? "bg-white text-black" : "bg-white/5 border border-white/10"}`}
+            >
+              מגיעים לבד
+            </button>
+          </div>
+
+          {/* טבלה מסוננת לפי הטאב */}
+          <div className="overflow-x-auto rounded-xl border border-white/10">
             <table className="w-full text-sm text-right">
               <thead className="bg-white/10 text-white/60 text-xs">
                 <tr>
@@ -147,20 +174,26 @@ function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {guests.map((g) => (
-                  <tr key={g.id} className="border-t border-white/10">
-                    <td className="p-3">{g.name}</td>
-                    <td className="p-3">{g.phone || "—"}</td>
-                    <td className="p-3">{g.ticket_count || 1}</td>
-                    <td className="p-3">{g.needs_transport ? g.pickup_point : "מגיע/ה לבד"}</td>
-                  </tr>
-                ))}
+                {guests
+                  .filter((g) => {
+                    if (activeTab === "all") return true;
+                    if (activeTab === "alone") return !g.needs_transport;
+                    return g.needs_transport && g.pickup_point === activeTab;
+                  })
+                  .map((g) => (
+                    <tr key={g.id} className="border-t border-white/10">
+                      <td className="p-3">{g.name}</td>
+                      <td className="p-3">{g.phone || "—"}</td>
+                      <td className="p-3">{g.ticket_count || 1}</td>
+                      <td className="p-3">{g.needs_transport ? g.pickup_point : "מגיע/ה לבד"}</td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
         </div>
       )}
-    </div>
+     </div> 
   );
 }
 
