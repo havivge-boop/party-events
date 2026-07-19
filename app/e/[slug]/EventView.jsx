@@ -69,7 +69,7 @@ const [needsTransport, setNeedsTransport] = useState(null);
       <div className="relative h-[52vh] min-h-[380px] w-full overflow-hidden">
         <img src={event.cover_image} alt="cover" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B10] via-[#0B0B10]/40 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 px-5 pb-6 flex items-end justify-between gap-3">
+        <div className="absolute bottom-0 left-0 right-0 pr-5 pl-2 pb-6 flex items-end justify-between gap-3">
           <h1 className="text-[38px] leading-[0.95] font-black tracking-tight uppercase" style={{ letterSpacing: "-0.02em" }}>
             {event.name}
           </h1>
