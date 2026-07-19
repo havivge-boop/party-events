@@ -208,6 +208,7 @@ function AdminDashboard() {
                     <th className="p-3">שם</th>
                     <th className="p-3">טלפון</th>
                     <th className="p-3">תאריך לידה</th>
+                    <th className="p-3">כתובת</th>
                     <th className="p-3">מגיע/ה עם</th>
                     <th className="p-3">הסעה</th>
                   </tr>
