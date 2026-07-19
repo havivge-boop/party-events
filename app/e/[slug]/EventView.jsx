@@ -11,13 +11,14 @@ const [needsTransport, setNeedsTransport] = useState(null);
   const [pickup, setPickup] = useState("");
   const [name, setName] = useState("");
   const [ticketCount, setTicketCount] = useState(1);
-  const [ticketDetails, setTicketDetails] = useState([{ name: "", birthDate: "" }]);
+  const [ticketDetails, setTicketDetails] = useState([]);
 
   useEffect(() => {
+    const target = Math.max(0, ticketCount - 1);
     setTicketDetails((prev) => {
       const next = [...prev];
-      while (next.length < ticketCount) next.push({ name: "", birthDate: "" });
-      while (next.length > ticketCount) next.pop();
+      while (next.length < target) next.push({ name: "", birthDate: "", phone: "" });
+      while (next.length > target) next.pop();
       return next;
     });
   }, [ticketCount]);
@@ -159,6 +160,13 @@ const [needsTransport, setNeedsTransport] = useState(null);
                     value={t.name}
                     onChange={(e) => updateTicketDetail(i, "name", e.target.value)}
                     placeholder="שם מלא"
+                    className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm outline-none mb-2"
+                  />
+                  <input
+                    value={t.phone}
+                    onChange={(e) => updateTicketDetail(i, "phone", e.target.value)}
+                    placeholder="מספר טלפון"
+                    type="tel"
                     className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm outline-none mb-2"
                   />
                   <input
