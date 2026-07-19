@@ -2,7 +2,7 @@
 // "use client" חובה כאן כי יש state (useState) ואינטראקציה - הקובץ הקודם (page.jsx)
 // הוא "server component" (רץ בשרת), הקובץ הזה רץ בדפדפן של המשתמש.
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MapPin, Calendar, Clock, Navigation, Bus, Check, ChevronDown } from "lucide-react";
 import { supabase } from "../../../lib/supabase";
 
@@ -11,6 +11,24 @@ const [needsTransport, setNeedsTransport] = useState(null);
   const [pickup, setPickup] = useState("");
   const [name, setName] = useState("");
   const [ticketCount, setTicketCount] = useState(1);
+  const [ticketDetails, setTicketDetails] = useState([{ name: "", birthDate: "" }]);
+
+  useEffect(() => {
+    setTicketDetails((prev) => {
+      const next = [...prev];
+      while (next.length < ticketCount) next.push({ name: "", birthDate: "" });
+      while (next.length > ticketCount) next.pop();
+      return next;
+    });
+  }, [ticketCount]);
+
+  function updateTicketDetail(index, field, value) {
+    setTicketDetails((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  }
   const [birthDate, setBirthDate] = useState("");
   const [phone, setPhone] = useState("");
     const [submitted, setSubmitted] = useState(false);
