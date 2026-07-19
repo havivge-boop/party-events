@@ -143,22 +143,25 @@ function AdminDashboard() {
               onClick={() => setActiveTab("all")}
               className={`px-3 py-2 rounded-lg text-xs font-semibold ${activeTab === "all" ? "bg-white text-black" : "bg-white/5 border border-white/10"}`}
             >
-              הכל
+              הכל ({guests.length})
             </button>
-            {(selectedEvent.pickup_points || []).map((p) => (
-              <button
-                key={p}
-                onClick={() => setActiveTab(p)}
-                className={`px-3 py-2 rounded-lg text-xs font-semibold ${activeTab === p ? "bg-white text-black" : "bg-white/5 border border-white/10"}`}
-              >
-                {p}
-              </button>
-            ))}
+            {(selectedEvent.pickup_points || []).map((p) => {
+              const count = guests.filter((g) => g.needs_transport && g.pickup_point === p).length;
+              return (
+                <button
+                  key={p}
+                  onClick={() => setActiveTab(p)}
+                  className={`px-3 py-2 rounded-lg text-xs font-semibold ${activeTab === p ? "bg-white text-black" : "bg-white/5 border border-white/10"}`}
+                >
+                  {p} ({count})
+                </button>
+              );
+            })}
             <button
               onClick={() => setActiveTab("alone")}
               className={`px-3 py-2 rounded-lg text-xs font-semibold ${activeTab === "alone" ? "bg-white text-black" : "bg-white/5 border border-white/10"}`}
             >
-              מגיעים לבד
+              מגיעים לבד ({guests.filter((g) => !g.needs_transport).length})
             </button>
           </div>
 
