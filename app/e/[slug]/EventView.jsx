@@ -147,7 +147,27 @@ const [needsTransport, setNeedsTransport] = useState(null);
             <span className="text-lg font-semibold w-6 text-center">{ticketCount}</span>
             <button onClick={() => setTicketCount((c) => c + 1)} className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-lg">+</button>
           </div>
-
+{ticketCount > 1 && (
+            <div className="mt-4 flex flex-col gap-3">
+              {ticketDetails.map((t, i) => (
+                <div key={i} className="rounded-xl bg-white/5 border border-white/10 p-3">
+                  <p className="text-xs text-white/50 mb-2">כרטיס {i + 2} — פרטי המוזמן/ת</p>
+                  <input
+                    value={t.name}
+                    onChange={(e) => updateTicketDetail(i, "name", e.target.value)}
+                    placeholder="שם מלא"
+                    className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm outline-none mb-2"
+                  />
+                  <input
+                    value={t.birthDate}
+                    onChange={(e) => updateTicketDetail(i, "birthDate", e.target.value)}
+                    type="date"
+                    className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm outline-none"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
           <div className="mt-5">
             <span className="flex items-center gap-1.5 text-xs text-white/50 mb-2">
               <Bus size={13} /> צריך/ה הסעה?
