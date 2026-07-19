@@ -143,6 +143,7 @@ function AdminDashboard() {
             name: g.name,
             phone: g.phone,
             birthDate: g.birth_date,
+            address: g.address,
             pickup: g.needs_transport ? g.pickup_point : "מגיע/ה לבד",
             groupWith: null,
           });
