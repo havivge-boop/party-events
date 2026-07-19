@@ -76,7 +76,7 @@ const [needsTransport, setNeedsTransport] = useState(null);
           <img
             src="https://i.postimg.cc/NFzjDpzM/1000159751-removebg-preview.png"
             alt="לוגו"
-            className="w-28 h-28 object-contain flex-shrink-0 self-center"
+            className="w-28 h-28 object-contain flex-shrink-0 self-start"
           />
         
         </div>
