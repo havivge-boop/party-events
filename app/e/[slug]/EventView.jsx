@@ -17,7 +17,7 @@ const [needsTransport, setNeedsTransport] = useState(null);
     const target = Math.max(0, ticketCount - 1);
     setTicketDetails((prev) => {
       const next = [...prev];
-      while (next.length < target) next.push({ name: "", birthDate: "", phone: "" });
+      while (next.length < target) next.push({ name: "", birthDate: "", phone: "", address: "" });
       while (next.length > target) next.pop();
       return next;
     });
