@@ -28,7 +28,8 @@ const [needsTransport, setNeedsTransport] = useState(null);
       event_id: event.id,
       name: name.trim(),
       ticket_count: ticketCount,
-      phone: phone.trim(),      needs_transport: needsTransport,
+      phone: phone.trim(),
+      birth_date: birthDate,      needs_transport: needsTransport,
       pickup_point: needsTransport ? pickup : null,
     });
     setSaving(false);
