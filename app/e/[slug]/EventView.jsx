@@ -11,6 +11,7 @@ const [needsTransport, setNeedsTransport] = useState(null);
   const [pickup, setPickup] = useState("");
   const [name, setName] = useState("");
   const [ticketCount, setTicketCount] = useState(1);
+  const [birthDate, setBirthDate] = useState("");
   const [phone, setPhone] = useState("");
     const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
