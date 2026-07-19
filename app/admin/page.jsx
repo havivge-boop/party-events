@@ -107,8 +107,7 @@ function AdminDashboard() {
           <Field label="קישור Waze" value={form.waze_link} onChange={(v) => setForm({ ...form, waze_link: v })} />
           <Field label="תיאור" value={form.description} onChange={(v) => setForm({ ...form, description: v })} textarea />
           <Field label="פרטים חשובים" value={form.important_info} onChange={(v) => setForm({ ...form, important_info: v })} textarea />
-          <Field label="קישור Bit" value={form.bit_link} onChange={(v) => setForm({ ...form, bit_link: v })} />
-          <Field label="מחיר (טקסט חופשי)" value={form.price} onChange={(v) => setForm({ ...form, price: v })} placeholder="80 ₪" />
+<Field label="קישור לתשלום (משולם)" value={form.bit_link} onChange={(v) => setForm({ ...form, bit_link: v })} />          <Field label="מחיר (טקסט חופשי)" value={form.price} onChange={(v) => setForm({ ...form, price: v })} placeholder="80 ₪" />
           <Field label="נקודות איסוף (מופרד בפסיקים)" value={form.pickup_points} onChange={(v) => setForm({ ...form, pickup_points: v })} placeholder="כיכר רבין, קניון עזריאלי" />
         </div>
         <button onClick={createEvent} className="w-full mt-4 rounded-xl bg-white text-black font-bold py-3 text-sm">

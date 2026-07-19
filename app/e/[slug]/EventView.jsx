@@ -179,8 +179,7 @@ export default function EventView({ event }) {
           rel="noreferrer"
           className="flex items-center justify-center gap-2 w-full rounded-2xl bg-[#FF3EA5] text-black font-black text-base py-4"
         >
-          לתשלום ב-Bit {event.price ? `— ${event.price}` : ""}
-        </a>
+לתשלום מאובטח {event.price ? `— ${event.price} ₪` : ""}        </a>
       </div>
     </div>
   );
