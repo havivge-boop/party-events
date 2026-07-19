@@ -7,10 +7,12 @@ import { MapPin, Calendar, Clock, Navigation, Bus, Check, ChevronDown } from "lu
 import { supabase } from "../../../lib/supabase";
 
 export default function EventView({ event }) {
-  const [needsTransport, setNeedsTransport] = useState(null);
+const [needsTransport, setNeedsTransport] = useState(null);
   const [pickup, setPickup] = useState("");
   const [name, setName] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [ticketCount, setTicketCount] = useState(1);
+  const [phone, setPhone] = useState("");
+    const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -24,7 +26,8 @@ export default function EventView({ event }) {
     const { error } = await supabase.from("guests").insert({
       event_id: event.id,
       name: name.trim(),
-      needs_transport: needsTransport,
+      ticket_count: ticketCount,
+      phone: phone.trim(),      needs_transport: needsTransport,
       pickup_point: needsTransport ? pickup : null,
     });
     setSaving(false);
@@ -82,7 +85,7 @@ export default function EventView({ event }) {
 
       {/* תיאור ופרטים חשובים */}
       <div className="px-5 mt-6">
-<p className="text-[15px] leading-relaxed text-white/80 whitespace-pre-line">{event.description}</p>        {event.important_info && (
+<p className="text-[17px] leading-relaxed text-white/80 whitespace-pre-line">{event.description}</p>        {event.important_info && (
           <div className="mt-4 rounded-xl bg-white/5 border border-white/10 p-4 text-sm text-white/70 leading-relaxed">
             <span className="block text-white font-semibold mb-1">חשוב לדעת</span>
             {event.important_info}
@@ -102,6 +105,22 @@ export default function EventView({ event }) {
             placeholder="איך קוראים לך?"
             className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm outline-none focus:border-[#FF3EA5]"
           />
+
+          <label className="block text-xs text-white/50 mb-1.5 mt-4">מספר טלפון</label>
+          <input
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="050-1234567"
+            type="tel"
+            className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm outline-none focus:border-[#FF3EA5]"
+          />
+
+          <label className="block text-xs text-white/50 mb-1.5 mt-4">כמות כרטיסים</label>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setTicketCount((c) => Math.max(1, c - 1))} className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-lg">-</button>
+            <span className="text-lg font-semibold w-6 text-center">{ticketCount}</span>
+            <button onClick={() => setTicketCount((c) => c + 1)} className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-lg">+</button>
+          </div>
 
           <div className="mt-5">
             <span className="flex items-center gap-1.5 text-xs text-white/50 mb-2">
@@ -178,7 +197,8 @@ export default function EventView({ event }) {
           rel="noreferrer"
           className="flex items-center justify-center gap-2 w-full rounded-2xl bg-[#FF3EA5] text-black font-black text-base py-4"
         >
-לתשלום מאובטח {event.price ? `— ${event.price} ₪` : ""}        </a>
+לתשלום מאובטח {event.price ? `— ${Number(event.price) * ticketCount} ₪` : ""}
+        </a>
       </div>
     </div>
   );
