@@ -70,6 +70,7 @@ function AdminDashboard() {
 
   async function loadGuests(event) {
     setSelectedEvent(event);
+    setActiveTab("all");
     const { data } = await supabase.from("guests").select("*").eq("event_id", event.id);
     setGuests(data || []);
   }
