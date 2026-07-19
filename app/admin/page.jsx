@@ -148,11 +148,13 @@ function AdminDashboard() {
             groupWith: null,
           });
           (g.ticket_details || []).forEach((t, i) => {
+          (g.ticket_details || []).forEach((t, i) => {
             flatRows.push({
               key: g.id + "-" + i,
               name: t.name || "—",
               phone: t.phone || "—",
               birthDate: t.birthDate || "—",
+              address: t.address || "—",
               pickup: g.needs_transport ? g.pickup_point : "מגיע/ה לבד",
               groupWith: g.name,
             });
