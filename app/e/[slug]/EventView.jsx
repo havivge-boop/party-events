@@ -50,6 +50,7 @@ const [needsTransport, setNeedsTransport] = useState(null);
       ticket_count: ticketCount,
       phone: phone.trim(),
       birth_date: birthDate,
+      address: address.trim(),
       ticket_details: ticketDetails,
       needs_transport: needsTransport,
       pickup_point: needsTransport ? pickup : null,
@@ -142,6 +143,14 @@ const [needsTransport, setNeedsTransport] = useState(null);
             value={birthDate}
             onChange={(e) => setBirthDate(e.target.value)}
             type="date"
+            className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm outline-none focus:border-[#FF3EA5]"
+          />
+
+          <label className="block text-xs text-white/50 mb-1.5 mt-4">כתובת מגורים</label>
+          <input
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            placeholder="עיר, רחוב ומספר"
             className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm outline-none focus:border-[#FF3EA5]"
           />
           <label className="block text-xs text-white/50 mb-1.5 mt-4">מספר טלפון</label>
