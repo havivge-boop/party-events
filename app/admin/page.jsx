@@ -148,7 +148,7 @@ function AdminDashboard() {
             groupWith: null,
           });
           (g.ticket_details || []).forEach((t, i) => {
-          (g.ticket_details || []).forEach((t, i) => {
+          
             flatRows.push({
               key: g.id + "-" + i,
               name: t.name || "—",
