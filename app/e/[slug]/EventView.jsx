@@ -273,14 +273,20 @@ const [needsTransport, setNeedsTransport] = useState(null);
 
       {/* כפתור התשלום - תמיד דבוק לתחתית המסך */}
       <div className="fixed bottom-0 left-0 right-0 px-4 pb-4 pt-3 bg-gradient-to-t from-[#0B0B10] via-[#0B0B10] to-transparent">
-        <a
-          href={event.bit_link}
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center justify-center gap-2 w-full rounded-2xl bg-[#FF3EA5] text-black font-black text-base py-4"
-        >
+        {submitted ? (
+          <a
+            href={event.bit_link}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center justify-center gap-2 w-full rounded-2xl bg-[#FF3EA5] text-black font-black text-base py-4"
+          >
 לתשלום מאובטח {event.price ? `— ${Number(event.price) * ticketCount} ₪` : ""}
-        </a>
+          </a>
+        ) : (
+          <div className="w-full rounded-2xl bg-white/10 text-white/40 font-bold text-sm py-4 text-center">
+            שמרו את הפרטים למעלה כדי להמשיך לתשלום
+          </div>
+        )}
       </div>
     </div>
   );
