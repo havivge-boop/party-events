@@ -68,6 +68,7 @@ const [needsTransport, setNeedsTransport] = useState(null);
       return;
     }
     setSubmitted(true);
+    window.open(event.bit_link, "_blank");
   }
 
   return (
@@ -272,7 +273,7 @@ const [needsTransport, setNeedsTransport] = useState(null);
             <p className="font-semibold">
               {needsTransport ? `נרשמת בהצלחה! ניפגש ב${pickup}` : "נרשמת בהצלחה! נתראה באירוע"}
             </p>
-            <p className="text-xs text-white/50">כדי לסגור את המקום — יש להשלים תשלום למטה</p>
+            <p className="text-xs text-white/50">מעביר אותך לדף התשלום...</p>
           </div>
         </div>
       )}
