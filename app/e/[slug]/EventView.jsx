@@ -37,8 +37,14 @@ const [needsTransport, setNeedsTransport] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const canSubmit = name.trim().length > 1 && needsTransport !== null && (!needsTransport || pickup);
-
+  const phoneValid = /^0\d{9}$/.test(phone.trim());
+  const canSubmit =
+    name.trim().length > 1 &&
+    phoneValid &&
+    birthDate &&
+    address.trim().length > 1 &&
+    needsTransport !== null &&
+    (!needsTransport || pickup);
   // הפונקציה הזו רצה כשלוחצים "שמור את הפרטים שלי"
   // היא כותבת שורה חדשה בטבלת guests ב-Supabase
   async function handleSubmit() {
