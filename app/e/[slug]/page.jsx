@@ -1,20 +1,16 @@
-// זה הקובץ שאחראי על הכתובת: yoursite.com/e/rooftop-summer
-// ה-[slug] בשם התיקייה אומר ל-Next.js: "כל מה שיבוא כאן, תני לי בתור פרמטר"
-
 import { supabase } from "../../../lib/supabase";
 import EventView from "./EventView";
+import GolanTripView from "./GolanTripView";
 
 export default async function EventPage({ params }) {
   const { slug } = await params;
 
-  // שולפים מה-Supabase את האירוע עם ה-slug הזה
   const { data: event } = await supabase
     .from("events")
     .select("*")
     .eq("slug", slug)
     .single();
 
-  // אם לא נמצא אירוע כזה - מציגים הודעה פשוטה
   if (!event) {
     return (
       <div className="min-h-screen bg-[#0B0B10] text-white flex items-center justify-center px-6 text-center">
@@ -23,6 +19,10 @@ export default async function EventPage({ params }) {
     );
   }
 
-  // מעבירים את הנתונים לקומפוננטת התצוגה (הקובץ EventView.jsx)
+  // בוחרים איזה עיצוב להציג לפי סוג האירוע
+  if (slug === "golan-trip") {
+    return <GolanTripView event={event} />;
+  }
+
   return <EventView event={event} />;
 }
