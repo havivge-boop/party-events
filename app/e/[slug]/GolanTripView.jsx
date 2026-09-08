@@ -1,8 +1,21 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { MapPin, Bus, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { MapPin, Bus, Check, ChevronDown } from "lucide-react";
 import { supabase } from "../../../lib/supabase";
+
+// מחשב טווח תאריכי לידה חוקיים: בין גיל 17.5 לגיל 28 נכון להיום
+function getBirthDateRange() {
+  const today = new Date();
+  const maxDate = new Date(today); // הכי צעיר שמותר (גיל 17.5 בדיוק)
+  maxDate.setFullYear(today.getFullYear() - 17);
+  maxDate.setMonth(maxDate.getMonth() - 6);
+  const minDate = new Date(today); // הכי מבוגר שמותר (גיל 28 בדיוק)
+  minDate.setFullYear(today.getFullYear() - 28);
+
+  const toInputFormat = (d) => d.toISOString().split("T")[0];
+  return { min: toInputFormat(minDate), max: toInputFormat(maxDate) };
+}
 
 // ===== צבעי הטיול - מקור אמת אחד לכל הפלטה =====
 const COLORS = {
@@ -41,10 +54,15 @@ const SCHEDULE = [
   },
 ];
 
-// גילאים אפשריים: 17.5 עד 28
-const AGE_OPTIONS = [];
-for (let age = 17.5; age <= 28; age += 0.5) {
-  AGE_OPTIONS.push(age);
+// טווח תאריכי לידה מותר: בין 17.5 ל-28 שנים אחורה מהיום
+function getBirthDateLimits() {
+  const today = new Date();
+  // הכי "צעיר" שמותר - לפני 17.5 שנים בדיוק
+  const maxDate = new Date(today.getFullYear() - 17, today.getMonth() - 6, today.getDate());
+  // הכי "מבוגר" שמותר - לפני 28 שנים
+  const minDate = new Date(today.getFullYear() - 28, today.getMonth(), today.getDate());
+  const toISO = (d) => d.toISOString().split("T")[0];
+  return { min: toISO(minDate), max: toISO(maxDate) };
 }
 
 function ScheduleAccordion() {
@@ -72,7 +90,13 @@ function ScheduleAccordion() {
             style={{ color: COLORS.textDark }}
           >
             <span className="flex items-center gap-2 font-semibold text-[15px]">
-              {openDays[dayIndex] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              <ChevronDown
+                size={16}
+                style={{
+                  transform: openDays[dayIndex] ? "rotate(0deg)" : "rotate(-90deg)",
+                  transition: "transform 0.25s ease",
+                }}
+              />
               {day.day}
             </span>
             <span className="text-xs" style={{ color: COLORS.textMuted }}>
@@ -80,42 +104,58 @@ function ScheduleAccordion() {
             </span>
           </button>
 
-          {openDays[dayIndex] && (
-            <div
-              className="px-4 pb-4 pt-1"
-              style={{
-                background: `linear-gradient(180deg, ${COLORS.gradMorning} 0%, ${COLORS.gradMid} 55%, ${COLORS.gradEvening} 100%)`,
-              }}
-            >
-              <div className="relative pr-10">
-                <div
-                  className="absolute top-1 bottom-4 w-[2px]"
-                  style={{ right: "23px", background: "rgba(0,0,0,0.12)" }}
-                />
-                {day.activities.map((act, i) => {
-                  const isLast = i === day.activities.length - 1;
-                  const dotColor =
-                    i === 0 ? COLORS.primary : isLast ? COLORS.dusk : COLORS.accent;
-                  return (
-                    <div key={i} className="relative" style={{ paddingBottom: isLast ? 0 : "18px" }}>
-                      <div
-                        className="absolute w-4 h-4 rounded-full flex items-center justify-center text-[9px]"
-                        style={{ right: "-1px", top: "2px", background: "#fff", border: `2px solid ${dotColor}` }}
-                      >
-                        {act.icon}
+          {/* גריד עם שורה שגדלה/מצטמצמת - נותן אנימציית פתיחה/סגירה חלקה בלי "קפיצה" */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateRows: openDays[dayIndex] ? "1fr" : "0fr",
+              transition: "grid-template-rows 0.35s ease",
+            }}
+          >
+            <div style={{ overflow: "hidden" }}>
+              <div
+                className="px-4 pb-4 pt-1"
+                style={{
+                  background: `linear-gradient(180deg, ${COLORS.gradMorning} 0%, ${COLORS.gradMid} 55%, ${COLORS.gradEvening} 100%)`,
+                }}
+              >
+                <div className="flex flex-col">
+                  {day.activities.map((act, i) => {
+                    const isLast = i === day.activities.length - 1;
+                    const dotColor =
+                      i === 0 ? COLORS.primary : isLast ? COLORS.dusk : COLORS.accent;
+                    return (
+                      <div key={i} className="flex gap-3">
+                        {/* עמודת האייקון + הקו המחבר - נפרדת לגמרי מהטקסט, אין חפיפה */}
+                        <div className="flex flex-col items-center">
+                          <div
+                            className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] shrink-0"
+                            style={{ background: "#fff", border: `2px solid ${dotColor}` }}
+                          >
+                            {act.icon}
+                          </div>
+                          {!isLast && (
+                            <div
+                              className="flex-1 w-[2px] my-1"
+                              style={{ background: "rgba(0,0,0,0.12)", minHeight: "16px" }}
+                            />
+                          )}
+                        </div>
+                        <div className="pb-4">
+                          <p className="text-[13px] font-medium m-0 leading-tight" style={{ color: dotColor }}>
+                            {act.time}
+                          </p>
+                          <p className="text-[14px] font-medium mt-0.5 leading-snug" style={{ color: COLORS.textDark }}>
+                            {act.title}
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-[13px] font-medium m-0" style={{ color: dotColor }}>
-                        {act.time}
-                      </p>
-                      <p className="text-[14px] font-medium mt-0.5" style={{ color: COLORS.textDark }}>
-                        {act.title}
-                      </p>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
       ))}
     </div>
@@ -127,7 +167,8 @@ export default function GolanTripView({ event }) {
   const [pickup, setPickup] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [birthDate, setBirthDate] = useState(""); // גיל נבחר (מספר)
+  const [birthDate, setBirthDate] = useState("");
+  const birthDateLimits = getBirthDateLimits(); // בין 17.5 ל-28 שנים אחורה מהיום
   const [address, setAddress] = useState("");
   const [dietary, setDietary] = useState("");
   const [ticketCount, setTicketCount] = useState(1);
@@ -294,30 +335,17 @@ export default function GolanTripView({ event }) {
             />
 
             <label className="block text-xs mb-1.5 mt-4" style={{ color: COLORS.textMuted }}>
-              גיל
+              תאריך לידה
             </label>
-            <div className="relative">
-              <select
-                value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
-                className="w-full appearance-none rounded-xl px-4 py-3 text-sm outline-none"
-                style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
-              >
-                <option value="" disabled>
-                  בחר/י גיל
-                </option>
-                {AGE_OPTIONS.map((age) => (
-                  <option key={age} value={age}>
-                    {age}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                style={{ color: COLORS.textMuted }}
-              />
-            </div>
+            <input
+              value={birthDate}
+              onChange={(e) => setBirthDate(e.target.value)}
+              type="date"
+              min={birthDateLimits.min}
+              max={birthDateLimits.max}
+              className="w-full rounded-xl px-4 py-3 text-sm outline-none"
+              style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
+            />
 
             <label className="block text-xs mb-1.5 mt-4" style={{ color: COLORS.textMuted }}>
               כתובת מגורים
@@ -388,23 +416,15 @@ export default function GolanTripView({ event }) {
                       className="w-full rounded-lg px-3 py-2 text-sm outline-none mb-2"
                       style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}` }}
                     />
-                    <div className="relative mb-2">
-                      <select
-                        value={t.birthDate}
-                        onChange={(e) => updateTicketDetail(i, "birthDate", e.target.value)}
-                        className="w-full appearance-none rounded-lg px-3 py-2 text-sm outline-none"
-                        style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}` }}
-                      >
-                        <option value="" disabled>
-                          גיל
-                        </option>
-                        {AGE_OPTIONS.map((age) => (
-                          <option key={age} value={age}>
-                            {age}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                    <input
+                      value={t.birthDate}
+                      onChange={(e) => updateTicketDetail(i, "birthDate", e.target.value)}
+                      type="date"
+                      min={birthDateLimits.min}
+                      max={birthDateLimits.max}
+                      className="w-full rounded-lg px-3 py-2 text-sm outline-none mb-2"
+                      style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}` }}
+                    />
                     <input
                       value={t.address}
                       onChange={(e) => updateTicketDetail(i, "address", e.target.value)}
