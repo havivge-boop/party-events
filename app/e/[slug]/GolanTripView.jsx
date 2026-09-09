@@ -56,15 +56,10 @@ const SCHEDULE = [
   },
 ];
 
-// טווח תאריכי לידה מותר: בין 17.5 ל-28 שנים אחורה מהיום
-function getBirthDateLimits() {
-  const today = new Date();
-  // הכי "צעיר" שמותר - לפני 17.5 שנים בדיוק
-  const maxDate = new Date(today.getFullYear() - 17, today.getMonth() - 6, today.getDate());
-  // הכי "מבוגר" שמותר - לפני 28 שנים
-  const minDate = new Date(today.getFullYear() - 28, today.getMonth(), today.getDate());
-  const toISO = (d) => d.toISOString().split("T")[0];
-  return { min: toISO(minDate), max: toISO(maxDate) };
+// שנות לידה מותרות - טווח קבוע וכולל (עדכן ידנית אם הטווח משתנה בעתיד)
+const BIRTH_YEARS = [];
+for (let y = 2009; y >= 1998; y--) {
+  BIRTH_YEARS.push(y);
 }
 
 function ScheduleAccordion() {
@@ -99,10 +94,12 @@ function ScheduleAccordion() {
                   transition: "transform 0.25s ease",
                 }}
               />
-              {day.day}
+              <span className="inline-block" style={{ minWidth: "62px" }}>
+                {day.day}
+              </span>
               {day.date && (
-                <span className="font-normal" style={{ color: COLORS.textMuted }}>
-                  · {day.date}
+                <span className="font-bold" style={{ color: COLORS.primary }}>
+                  {day.date}
                 </span>
               )}
             </span>
@@ -170,12 +167,10 @@ function ScheduleAccordion() {
 }
 
 export default function GolanTripView({ event }) {
-  const [needsTransport, setNeedsTransport] = useState(null);
   const [pickup, setPickup] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [birthDate, setBirthDate] = useState("");
-  const birthDateLimits = getBirthDateLimits(); // בין 17.5 ל-28 שנים אחורה מהיום
+  const [birthYear, setBirthYear] = useState("");
   const [address, setAddress] = useState("");
   const [dietary, setDietary] = useState("");
   const [ticketCount, setTicketCount] = useState(1);
@@ -190,7 +185,7 @@ export default function GolanTripView({ event }) {
     setTicketDetails((prev) => {
       const next = [...prev];
       while (next.length < target)
-        next.push({ name: "", birthDate: "", phone: "", address: "", dietary: "" });
+        next.push({ name: "", birthYear: "", phone: "", address: "", dietary: "" });
       while (next.length > target) next.pop();
       return next;
     });
@@ -212,33 +207,38 @@ export default function GolanTripView({ event }) {
   const canSubmit =
     name.trim().length > 1 &&
     phoneValid &&
-    birthDate &&
+    birthYear &&
     address.trim().length > 1 &&
-    needsTransport !== null &&
-    (!needsTransport || pickup);
+    pickup;
 
   async function handleSubmit() {
     setSaving(true);
     setError("");
+
+    // פותחים כרטיסייה ריקה *מיד* בלחיצה (לפני ה-await) - כך שהדפדפן לא חוסם אותה כפופ-אפ.
+    // אחרי שההרשמה נשמרת בהצלחה, מכוונים אותה לדף התשלום.
+    const paymentTab = window.open("", "_blank");
+
     const { error } = await supabase.from("guests").insert({
       event_id: event.id,
       name: name.trim(),
       ticket_count: ticketCount,
       phone: phone.trim(),
-      birth_date: birthDate,
+      birth_date: `${birthYear}-01-01`,
       address: address.trim(),
       dietary_restrictions: dietary.trim() || null,
       ticket_details: ticketDetails,
-      needs_transport: needsTransport,
-      pickup_point: needsTransport ? pickup : null,
+      needs_transport: true,
+      pickup_point: pickup,
     });
     setSaving(false);
     if (error) {
       setError("משהו השתבש, נסו שוב");
+      if (paymentTab) paymentTab.close();
       return;
     }
     setSubmitted(true);
-    window.open(event.bit_link, "_blank");
+    if (paymentTab) paymentTab.location.href = event.bit_link;
   }
 
   return (
@@ -342,17 +342,30 @@ export default function GolanTripView({ event }) {
             />
 
             <label className="block text-xs mb-1.5 mt-4" style={{ color: COLORS.textMuted }}>
-              תאריך לידה
+              שנת לידה
             </label>
-            <input
-              value={birthDate}
-              onChange={(e) => setBirthDate(e.target.value)}
-              type="date"
-              min={birthDateLimits.min}
-              max={birthDateLimits.max}
-              className="w-full rounded-xl px-4 py-3 text-sm outline-none"
-              style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
-            />
+            <div className="relative">
+              <select
+                value={birthYear}
+                onChange={(e) => setBirthYear(e.target.value)}
+                className="w-full appearance-none rounded-xl px-4 py-3 text-sm outline-none"
+                style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}`, color: COLORS.textDark }}
+              >
+                <option value="" disabled>
+                  בחר/י שנת לידה
+                </option>
+                {BIRTH_YEARS.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                style={{ color: COLORS.accent }}
+              />
+            </div>
 
             <label className="block text-xs mb-1.5 mt-4" style={{ color: COLORS.textMuted }}>
               כתובת מגורים
@@ -423,15 +436,21 @@ export default function GolanTripView({ event }) {
                       className="w-full rounded-lg px-3 py-2 text-sm outline-none mb-2"
                       style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}` }}
                     />
-                    <input
-                      value={t.birthDate}
-                      onChange={(e) => updateTicketDetail(i, "birthDate", e.target.value)}
-                      type="date"
-                      min={birthDateLimits.min}
-                      max={birthDateLimits.max}
-                      className="w-full rounded-lg px-3 py-2 text-sm outline-none mb-2"
-                      style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}` }}
-                    />
+                    <select
+                      value={t.birthYear}
+                      onChange={(e) => updateTicketDetail(i, "birthYear", e.target.value)}
+                      className="w-full appearance-none rounded-lg px-3 py-2 text-sm outline-none mb-2"
+                      style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}`, color: COLORS.textDark }}
+                    >
+                      <option value="" disabled>
+                        שנת לידה
+                      </option>
+                      {BIRTH_YEARS.map((y) => (
+                        <option key={y} value={y}>
+                          {y}
+                        </option>
+                      ))}
+                    </select>
                     <input
                       value={t.address}
                       onChange={(e) => updateTicketDetail(i, "address", e.target.value)}
@@ -453,60 +472,30 @@ export default function GolanTripView({ event }) {
 
             <div className="mt-5">
               <span className="flex items-center gap-1.5 text-xs mb-2" style={{ color: COLORS.textMuted }}>
-                <Bus size={13} /> צריך/ה הסעה?
+                <Bus size={13} /> נקודת עלייה
               </span>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setNeedsTransport(true)}
-                  className="rounded-xl py-3 text-sm font-semibold"
-                  style={
-                    needsTransport === true
-                      ? { background: COLORS.primary, color: COLORS.primaryText, border: `1px solid ${COLORS.primary}` }
-                      : { background: COLORS.cardBg, color: COLORS.textMuted, border: `1px solid ${COLORS.border}` }
-                  }
+              <div className="relative">
+                <select
+                  value={pickup}
+                  onChange={(e) => setPickup(e.target.value)}
+                  className="w-full appearance-none rounded-xl px-4 py-3 text-sm outline-none"
+                  style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}`, color: COLORS.textDark }}
                 >
-                  כן, צריך/ה
-                </button>
-                <button
-                  onClick={() => {
-                    setNeedsTransport(false);
-                    setPickup("");
-                  }}
-                  className="rounded-xl py-3 text-sm font-semibold"
-                  style={
-                    needsTransport === false
-                      ? { background: COLORS.textDark, color: "#fff", border: `1px solid ${COLORS.textDark}` }
-                      : { background: COLORS.cardBg, color: COLORS.textMuted, border: `1px solid ${COLORS.border}` }
-                  }
-                >
-                  מגיע/ה לבד
-                </button>
-              </div>
-
-              {needsTransport === true && (
-                <div className="mt-3 relative">
-                  <select
-                    value={pickup}
-                    onChange={(e) => setPickup(e.target.value)}
-                    className="w-full appearance-none rounded-xl px-4 py-3 text-sm outline-none"
-                    style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
-                  >
-                    <option value="" disabled>
-                      בחר/י נקודת איסוף
+                  <option value="" disabled>
+                    בחר/י נקודת עלייה
+                  </option>
+                  {(event.pickup_points || []).map((p) => (
+                    <option key={p} value={p}>
+                      {p}
                     </option>
-                    {(event.pickup_points || []).map((p) => (
-                      <option key={p} value={p}>
-                        {p}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                    style={{ color: COLORS.textMuted }}
-                  />
-                </div>
-              )}
+                  ))}
+                </select>
+                <ChevronDown
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                  style={{ color: COLORS.accent }}
+                />
+              </div>
             </div>
 
             {error && (
@@ -540,7 +529,7 @@ export default function GolanTripView({ event }) {
               <Check size={20} color="#fff" />
             </div>
             <p className="font-semibold" style={{ color: COLORS.textDark }}>
-              {needsTransport ? `נרשמת בהצלחה! ניפגש ב${pickup}` : "נרשמת בהצלחה! נתראה בטיול"}
+              {`נרשמת בהצלחה! ניפגש ב${pickup}`}
             </p>
             <p className="text-xs" style={{ color: COLORS.textMuted }}>
               מעביר אותך לדף התשלום...
