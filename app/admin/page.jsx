@@ -144,17 +144,19 @@ function AdminDashboard() {
             phone: g.phone,
             birthDate: g.birth_date,
             address: g.address,
+            dietary: g.dietary_restrictions || "—",
             pickup: g.needs_transport ? g.pickup_point : "מגיע/ה לבד",
             groupWith: null,
           });
           (g.ticket_details || []).forEach((t, i) => {
-          
+
             flatRows.push({
               key: g.id + "-" + i,
               name: t.name || "—",
               phone: t.phone || "—",
               birthDate: t.birthDate || "—",
               address: t.address || "—",
+              dietary: t.dietary || "—",
               pickup: g.needs_transport ? g.pickup_point : "מגיע/ה לבד",
               groupWith: g.name,
             });
@@ -209,6 +211,7 @@ function AdminDashboard() {
                     <th className="p-3">טלפון</th>
                     <th className="p-3">תאריך לידה</th>
                     <th className="p-3">כתובת</th>
+                    <th className="p-3">הגבלות תזונה</th>
                     <th className="p-3">מגיע/ה עם</th>
                     <th className="p-3">הסעה</th>
                   </tr>
@@ -220,6 +223,7 @@ function AdminDashboard() {
                       <td className="p-3">{r.phone}</td>
                       <td className="p-3">{r.birthDate}</td>
                       <td className="p-3">{r.address || "—"}</td>
+                      <td className="p-3">{r.dietary}</td>
                       <td className="p-3 text-white/50">{r.groupWith || "—"}</td>
                       <td className="p-3">{r.pickup}</td>
                     </tr>
