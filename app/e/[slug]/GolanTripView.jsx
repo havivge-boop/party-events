@@ -37,6 +37,7 @@ const COLORS = {
 const SCHEDULE = [
   {
     day: "יום חמישי",
+    date: "8.10", // עדכן לתאריך הסופי
     activities: [
       { time: "08:30", title: "מסלול מג'רסה", icon: "💧" },
       { time: "12:00", title: "ארוחת פלאפל", icon: "🧆" },
@@ -46,6 +47,7 @@ const SCHEDULE = [
   },
   {
     day: "יום שישי",
+    date: "9.10", // עדכן לתאריך הסופי
     activities: [
       { time: "09:00", title: "מסלול באניאס", icon: "🏞️" },
       { time: "13:00", title: "מסיק חקלאי", icon: "🍎" },
@@ -98,6 +100,11 @@ function ScheduleAccordion() {
                 }}
               />
               {day.day}
+              {day.date && (
+                <span className="font-normal" style={{ color: COLORS.textMuted }}>
+                  · {day.date}
+                </span>
+              )}
             </span>
             <span className="text-xs" style={{ color: COLORS.textMuted }}>
               {day.activities.length} פעילויות
