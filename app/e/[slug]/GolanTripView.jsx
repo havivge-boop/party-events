@@ -62,6 +62,27 @@ for (let y = 2009; y >= 1998; y--) {
   BIRTH_YEARS.push(y);
 }
 
+const MONTHS = [
+  { value: "01", label: "ינואר" },
+  { value: "02", label: "פברואר" },
+  { value: "03", label: "מרץ" },
+  { value: "04", label: "אפריל" },
+  { value: "05", label: "מאי" },
+  { value: "06", label: "יוני" },
+  { value: "07", label: "יולי" },
+  { value: "08", label: "אוגוסט" },
+  { value: "09", label: "ספטמבר" },
+  { value: "10", label: "אוקטובר" },
+  { value: "11", label: "נובמבר" },
+  { value: "12", label: "דצמבר" },
+];
+
+// כמות הימים בחודש נתון (מתחשב בשנה מעוברת)
+function daysInMonth(year, month) {
+  if (!year || !month) return 31;
+  return new Date(Number(year), Number(month), 0).getDate();
+}
+
 function ScheduleAccordion() {
   const [openDays, setOpenDays] = useState(() => SCHEDULE.map(() => true));
 
@@ -166,10 +187,104 @@ function ScheduleAccordion() {
   );
 }
 
+// בורר רשימה מותאם אישית - נפתח כרשימה נגללת בתוך העמוד, בעיצוב האתר
+// (במקום select רגיל שפותח את חלונית המערכת של הדפדפן/טלפון)
+// options: מערך של מחרוזות/מספרים, או מערך של {value,label}
+function ListPicker({ value, onChange, options, placeholder, compact }) {
+  const [open, setOpen] = useState(false);
+
+  const normalized = options.map((opt) =>
+    typeof opt === "object" ? opt : { value: String(opt), label: String(opt) }
+  );
+  const selected = normalized.find((o) => String(o.value) === String(value));
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between rounded-xl text-sm"
+        style={{
+          background: COLORS.cardBg,
+          border: `1px solid ${COLORS.border}`,
+          color: selected ? COLORS.textDark : COLORS.textMuted,
+          padding: compact ? "10px 10px" : "12px 16px",
+        }}
+      >
+        <span>{selected ? selected.label : placeholder}</span>
+        <ChevronDown
+          size={15}
+          style={{
+            color: COLORS.accent,
+            transform: open ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 0.2s ease",
+            flexShrink: 0,
+          }}
+        />
+      </button>
+
+      {open && (
+        <>
+          {/* שכבה שקופה שסוגרת את הרשימה בלחיצה מחוץ לה */}
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div
+            className="absolute z-20 mt-1.5 w-full rounded-xl overflow-hidden"
+            style={{
+              background: COLORS.cardBg,
+              border: `1px solid ${COLORS.border}`,
+              boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+            }}
+          >
+            <div className="max-h-52 overflow-y-auto">
+              {normalized.map((opt) => {
+                const isSelected = String(opt.value) === String(value);
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => {
+                      onChange(opt.value);
+                      setOpen(false);
+                    }}
+                    className="w-full text-right px-4 py-2.5 text-sm"
+                    style={{
+                      background: isSelected ? COLORS.gradMorning : "transparent",
+                      color: isSelected ? COLORS.primary : COLORS.textDark,
+                      fontWeight: isSelected ? 600 : 400,
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// בורר תאריך לידה מלא - שלושה ListPicker צמודים (יום / חודש / שנה)
+function BirthDatePicker({ day, month, year, onDayChange, onMonthChange, onYearChange }) {
+  const dayCount = daysInMonth(year, month);
+  const days = Array.from({ length: dayCount }, (_, i) => i + 1);
+
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      <ListPicker value={day} onChange={onDayChange} options={days} placeholder="יום" compact />
+      <ListPicker value={month} onChange={onMonthChange} options={MONTHS} placeholder="חודש" compact />
+      <ListPicker value={year} onChange={onYearChange} options={BIRTH_YEARS} placeholder="שנה" compact />
+    </div>
+  );
+}
+
 export default function GolanTripView({ event }) {
   const [pickup, setPickup] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [birthDay, setBirthDay] = useState("");
+  const [birthMonth, setBirthMonth] = useState("");
   const [birthYear, setBirthYear] = useState("");
   const [address, setAddress] = useState("");
   const [dietary, setDietary] = useState("");
@@ -185,7 +300,7 @@ export default function GolanTripView({ event }) {
     setTicketDetails((prev) => {
       const next = [...prev];
       while (next.length < target)
-        next.push({ name: "", birthYear: "", phone: "", address: "", dietary: "" });
+        next.push({ name: "", birthDay: "", birthMonth: "", birthYear: "", phone: "", address: "", dietary: "" });
       while (next.length > target) next.pop();
       return next;
     });
@@ -207,6 +322,8 @@ export default function GolanTripView({ event }) {
   const canSubmit =
     name.trim().length > 1 &&
     phoneValid &&
+    birthDay &&
+    birthMonth &&
     birthYear &&
     address.trim().length > 1 &&
     pickup;
@@ -219,12 +336,14 @@ export default function GolanTripView({ event }) {
     // אחרי שההרשמה נשמרת בהצלחה, מכוונים אותה לדף התשלום.
     const paymentTab = window.open("", "_blank");
 
+    const birthDateISO = `${birthYear}-${birthMonth}-${String(birthDay).padStart(2, "0")}`;
+
     const { error } = await supabase.from("guests").insert({
       event_id: event.id,
       name: name.trim(),
       ticket_count: ticketCount,
       phone: phone.trim(),
-      birth_date: `${birthYear}-01-01`,
+      birth_date: birthDateISO,
       address: address.trim(),
       dietary_restrictions: dietary.trim() || null,
       ticket_details: ticketDetails,
@@ -342,30 +461,16 @@ export default function GolanTripView({ event }) {
             />
 
             <label className="block text-xs mb-1.5 mt-4" style={{ color: COLORS.textMuted }}>
-              שנת לידה
+              תאריך לידה
             </label>
-            <div className="relative">
-              <select
-                value={birthYear}
-                onChange={(e) => setBirthYear(e.target.value)}
-                className="w-full appearance-none rounded-xl px-4 py-3 text-sm outline-none"
-                style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}`, color: COLORS.textDark }}
-              >
-                <option value="" disabled>
-                  בחר/י שנת לידה
-                </option>
-                {BIRTH_YEARS.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                style={{ color: COLORS.accent }}
-              />
-            </div>
+            <BirthDatePicker
+              day={birthDay}
+              month={birthMonth}
+              year={birthYear}
+              onDayChange={setBirthDay}
+              onMonthChange={setBirthMonth}
+              onYearChange={setBirthYear}
+            />
 
             <label className="block text-xs mb-1.5 mt-4" style={{ color: COLORS.textMuted }}>
               כתובת מגורים
@@ -436,21 +541,16 @@ export default function GolanTripView({ event }) {
                       className="w-full rounded-lg px-3 py-2 text-sm outline-none mb-2"
                       style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}` }}
                     />
-                    <select
-                      value={t.birthYear}
-                      onChange={(e) => updateTicketDetail(i, "birthYear", e.target.value)}
-                      className="w-full appearance-none rounded-lg px-3 py-2 text-sm outline-none mb-2"
-                      style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}`, color: COLORS.textDark }}
-                    >
-                      <option value="" disabled>
-                        שנת לידה
-                      </option>
-                      {BIRTH_YEARS.map((y) => (
-                        <option key={y} value={y}>
-                          {y}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="mb-2">
+                      <BirthDatePicker
+                        day={t.birthDay}
+                        month={t.birthMonth}
+                        year={t.birthYear}
+                        onDayChange={(v) => updateTicketDetail(i, "birthDay", v)}
+                        onMonthChange={(v) => updateTicketDetail(i, "birthMonth", v)}
+                        onYearChange={(v) => updateTicketDetail(i, "birthYear", v)}
+                      />
+                    </div>
                     <input
                       value={t.address}
                       onChange={(e) => updateTicketDetail(i, "address", e.target.value)}
