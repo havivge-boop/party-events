@@ -42,6 +42,7 @@ const SCHEDULE = [
       { time: "06:30", title: "יציאה מאשדוד", icon: "🚌" },
       { time: "07:00", title: "הגעה לרמלה", icon: "🚏" },
       { time: "10:15", title: "מסלול מים במג'רסה", icon: "💧" },
+      { time: "12:30", title: "ארוחת צהריים - פלאפל", icon: "🧆" },
       { time: "14:15", title: "טיול רייזר ב\"רייזר הגולן\"", icon: "🚙" },
       { time: "18:00", title: "הגעה למקום הלינה \"הכפר האינדיאני\" באבני איתן", icon: "🏕️" },
       { time: "20:00", title: "ארוחת ערב על האש", icon: "🔥" },
@@ -62,7 +63,7 @@ const SCHEDULE = [
 
 // שנות לידה מותרות - טווח קבוע וכולל (עדכן ידנית אם הטווח משתנה בעתיד)
 const BIRTH_YEARS = [];
-for (let y = 2009; y >= 1998; y--) {
+for (let y = 2009; y >= 1997; y--) {
   BIRTH_YEARS.push(y);
 }
 
@@ -503,22 +504,29 @@ export default function GolanTripView({ event }) {
             <label className="block text-xs mb-1.5 mt-4" style={{ color: COLORS.textMuted }}>
               כמות משתתפים
             </label>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setTicketCount((c) => Math.max(1, c - 1))}
-                className="w-10 h-10 rounded-xl text-lg"
-                style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
-              >
-                -
-              </button>
-              <span className="text-lg font-semibold w-6 text-center">{ticketCount}</span>
-              <button
-                onClick={() => setTicketCount((c) => c + 1)}
-                className="w-10 h-10 rounded-xl text-lg"
-                style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
-              >
-                +
-              </button>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setTicketCount((c) => Math.max(1, c - 1))}
+                  className="w-10 h-10 rounded-xl text-lg"
+                  style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
+                >
+                  -
+                </button>
+                <span className="text-lg font-semibold w-6 text-center">{ticketCount}</span>
+                <button
+                  onClick={() => setTicketCount((c) => c + 1)}
+                  className="w-10 h-10 rounded-xl text-lg"
+                  style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
+                >
+                  +
+                </button>
+              </div>
+              {event.price && (
+                <span className="text-sm font-semibold" style={{ color: COLORS.accent }}>
+                  סה״כ לתשלום: {Number(event.price) * ticketCount} ₪
+                </span>
+              )}
             </div>
 
             {ticketCount > 1 && (
