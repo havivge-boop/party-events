@@ -33,25 +33,29 @@ const COLORS = {
   gradEvening: "#E8D3D6",
 };
 
-// ===== נתוני הלוז - עדכן/החלף כשיהיה לוז סופי =====
+// ===== נתוני הלוז - מעודכן לפי הלו"ז הרשמי =====
 const SCHEDULE = [
   {
     day: "יום חמישי",
-    date: "8.10", // עדכן לתאריך הסופי
+    date: "8.10",
     activities: [
-      { time: "08:30", title: "מסלול מג'רסה", icon: "💧" },
-      { time: "12:00", title: "ארוחת פלאפל", icon: "🧆" },
-      { time: "13:30", title: "קיאקים/רפטינג בירדן", icon: "🚣" },
-      { time: "19:00", title: "הגעה לכפר האינדיאני + על האש", icon: "🏕️" },
+      { time: "06:30", title: "יציאה מאשדוד", icon: "🚌" },
+      { time: "07:00", title: "הגעה לרמלה", icon: "🚏" },
+      { time: "10:15", title: "מסלול מים במג'רסה", icon: "💧" },
+      { time: "14:15", title: "טיול רייזר ב\"רייזר הגולן\"", icon: "🚙" },
+      { time: "18:00", title: "הגעה למקום הלינה \"הכפר האינדיאני\" באבני איתן", icon: "🏕️" },
+      { time: "20:00", title: "ארוחת ערב על האש", icon: "🔥" },
     ],
   },
   {
     day: "יום שישי",
-    date: "9.10", // עדכן לתאריך הסופי
+    date: "9.10",
     activities: [
-      { time: "09:00", title: "מסלול באניאס", icon: "🏞️" },
-      { time: "13:00", title: "מסיק חקלאי", icon: "🍎" },
-      { time: "15:30", title: "יציאה דרומה מצומת גולני", icon: "🚌" },
+      { time: "08:00", title: "ארוחת בוקר", icon: "🍳" },
+      { time: "10:00", title: "קייאקים ב\"רפטינג נהר הירדן\"", icon: "🚣" },
+      { time: "12:00", title: "יציאה הביתה", icon: "🚌" },
+      { time: "14:15", title: "הגעה לרמלה", icon: "🚏" },
+      { time: "14:50", title: "הגעה לאשדוד", icon: "🏠" },
     ],
   },
 ];
@@ -318,7 +322,9 @@ export default function GolanTripView({ event }) {
     document.getElementById("golan-registration-form")?.scrollIntoView({ behavior: "smooth" });
   }
 
-  const phoneValid = /^0\d{9}$/.test(phone.trim());
+  // מנקה מקפים/רווחים לפני הבדיקה - כך שהמקף לא חובה, אבל חוסר ספרה עדיין נתפס
+  const phoneDigitsOnly = phone.replace(/[^\d]/g, "");
+  const phoneValid = /^0\d{9}$/.test(phoneDigitsOnly);
   const canSubmit =
     name.trim().length > 1 &&
     phoneValid &&
@@ -342,7 +348,7 @@ export default function GolanTripView({ event }) {
       event_id: event.id,
       name: name.trim(),
       ticket_count: ticketCount,
-      phone: phone.trim(),
+      phone: phoneDigitsOnly,
       birth_date: birthDateISO,
       address: address.trim(),
       dietary_restrictions: dietary.trim() || null,
@@ -631,8 +637,13 @@ export default function GolanTripView({ event }) {
             <p className="font-semibold" style={{ color: COLORS.textDark }}>
               {`נרשמת בהצלחה! ניפגש ב${pickup}`}
             </p>
+            {event.price && (
+              <p className="text-sm font-medium" style={{ color: COLORS.accent }}>
+                סכום לתשלום: {Number(event.price) * ticketCount} ₪
+              </p>
+            )}
             <p className="text-xs" style={{ color: COLORS.textMuted }}>
-              מעביר אותך לדף התשלום...
+              נפתחה עבורך כרטיסייה עם דף התשלום. אם היא לא נפתחה - לחצו על הכפתור למטה.
             </p>
           </div>
         )}
@@ -651,7 +662,7 @@ export default function GolanTripView({ event }) {
             className="flex items-center justify-center gap-2 w-full rounded-2xl font-bold text-base py-4"
             style={{ background: COLORS.accent, color: "#fff" }}
           >
-            לתשלום מאובטח {event.price ? `— ${Number(event.price) * ticketCount} ₪` : ""}
+            לתשלום מאובטח (גיבוי) {event.price ? `— ${Number(event.price) * ticketCount} ₪` : ""}
           </a>
         ) : (
           <div
