@@ -4,18 +4,8 @@ import React, { useState, useEffect } from "react";
 import { MapPin, Bus, Check, ChevronDown } from "lucide-react";
 import { supabase } from "../../../lib/supabase";
 
-// מחשב טווח תאריכי לידה חוקיים: בין גיל 17.5 לגיל 28 נכון להיום
-function getBirthDateRange() {
-  const today = new Date();
-  const maxDate = new Date(today); // הכי צעיר שמותר (גיל 17.5 בדיוק)
-  maxDate.setFullYear(today.getFullYear() - 17);
-  maxDate.setMonth(maxDate.getMonth() - 6);
-  const minDate = new Date(today); // הכי מבוגר שמותר (גיל 28 בדיוק)
-  minDate.setFullYear(today.getFullYear() - 28);
-
-  const toInputFormat = (d) => d.toISOString().split("T")[0];
-  return { min: toInputFormat(minDate), max: toInputFormat(maxDate) };
-}
+// קישור ללוגו העדה
+const LOGO_URL = "https://i.postimg.cc/NFzjDpzM/1000159751-removebg-preview.png";
 
 // ===== צבעי הטיול - מקור אמת אחד לכל הפלטה =====
 const COLORS = {
@@ -377,9 +367,12 @@ export default function GolanTripView({ event }) {
         <p className="text-xs font-medium mb-1" style={{ color: COLORS.accent }}>
           טיול קבוצתי
         </p>
-        <h1 className="text-2xl font-semibold m-0" style={{ color: COLORS.textDark }}>
-          {event.name || "טיול לגולן"}
-        </h1>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-2xl font-semibold m-0" style={{ color: COLORS.textDark }}>
+            {event.name || "טיול לגולן"}
+          </h1>
+          <img src={LOGO_URL} alt="לוגו" className="w-14 h-14 object-contain flex-shrink-0" />
+        </div>
         {event.event_date && (
           <p className="text-sm mt-1" style={{ color: COLORS.textMuted }}>
             {event.event_date}
@@ -391,7 +384,7 @@ export default function GolanTripView({ event }) {
       <div className="px-5 mb-6">
         <button
           onClick={scrollToForm}
-          className="w-full rounded-xl py-3.5 text-[15px] font-semibold"
+          className="w-full rounded-xl py-4 text-[17px] font-bold"
           style={{ background: COLORS.primary, color: COLORS.primaryText }}
         >
           מעבר לרישום
@@ -427,6 +420,17 @@ export default function GolanTripView({ event }) {
           </p>
         </div>
       )}
+
+      {/* כפתור מעבר לרישום נוסף - ממש לפני הלוז, במבנה "רישום - לוז - רישום" */}
+      <div className="px-5 mb-6">
+        <button
+          onClick={scrollToForm}
+          className="w-full rounded-xl py-4 text-[17px] font-bold"
+          style={{ background: COLORS.primary, color: COLORS.primaryText }}
+        >
+          מעבר לרישום
+        </button>
+      </div>
 
       {/* לוז */}
       <div className="px-5 mb-8">
