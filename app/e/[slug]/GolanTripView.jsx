@@ -309,8 +309,12 @@ export default function GolanTripView({ event }) {
     });
   }
 
-  function scrollToForm() {
-    document.getElementById("golan-registration-form")?.scrollIntoView({ behavior: "smooth" });
+  function scrollToTopForm() {
+    document.getElementById("golan-registration-form-top")?.scrollIntoView({ behavior: "smooth" });
+  }
+
+  function scrollToBottomForm() {
+    document.getElementById("golan-registration-form-bottom")?.scrollIntoView({ behavior: "smooth" });
   }
 
   // מנקה מקפים/רווחים לפני הבדיקה - כך שהמקף לא חובה, אבל חוסר ספרה עדיין נתפס
@@ -357,6 +361,232 @@ export default function GolanTripView({ event }) {
     if (paymentTab) paymentTab.location.href = event.bit_link;
   }
 
+  // כל תוכן טופס ההרשמה - מוגדר פעם אחת, נקרא פעמיים (לפני ואחרי הלוז)
+  // כך שאין כפילות קוד, ושני המופעים תמיד מסונכרנים לאותו state
+  function renderRegistrationForm() {
+    if (submitted) {
+      return (
+        <div
+          className="rounded-2xl p-5 flex flex-col items-center text-center gap-2"
+          style={{ background: COLORS.gradMorning, border: `1px solid ${COLORS.primary}` }}
+        >
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center"
+            style={{ background: COLORS.primary }}
+          >
+            <Check size={20} color="#fff" />
+          </div>
+          <p className="font-semibold" style={{ color: COLORS.textDark }}>
+            {`נרשמת בהצלחה! ניפגש ב${pickup}`}
+          </p>
+          {event.price && (
+            <p className="text-sm font-medium" style={{ color: COLORS.accent }}>
+              סכום לתשלום: {Number(event.price) * ticketCount} ₪
+            </p>
+          )}
+          <p className="text-xs" style={{ color: COLORS.textMuted }}>
+            נפתחה עבורך כרטיסייה עם דף התשלום. אם היא לא נפתחה - לחצו על הכפתור למטה.
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <h2 className="text-lg font-semibold mb-4" style={{ color: COLORS.textDark }}>
+          הרשמה לטיול
+        </h2>
+
+        <label className="block text-xs mb-1.5" style={{ color: COLORS.textMuted }}>
+          שם מלא
+        </label>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="איך קוראים לך?"
+          className="w-full rounded-xl px-4 py-3 text-sm outline-none"
+          style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
+        />
+
+        <label className="block text-xs mb-1.5 mt-4" style={{ color: COLORS.textMuted }}>
+          מספר טלפון
+        </label>
+        <input
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder="050-1234567"
+          type="tel"
+          className="w-full rounded-xl px-4 py-3 text-sm outline-none"
+          style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
+        />
+
+        <label className="block text-xs mb-1.5 mt-4" style={{ color: COLORS.textMuted }}>
+          תאריך לידה
+        </label>
+        <BirthDatePicker
+          day={birthDay}
+          month={birthMonth}
+          year={birthYear}
+          onDayChange={setBirthDay}
+          onMonthChange={setBirthMonth}
+          onYearChange={setBirthYear}
+        />
+
+        <label className="block text-xs mb-1.5 mt-4" style={{ color: COLORS.textMuted }}>
+          כתובת מגורים
+        </label>
+        <input
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          placeholder="עיר, רחוב ומספר"
+          className="w-full rounded-xl px-4 py-3 text-sm outline-none"
+          style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
+        />
+
+        <label className="block text-xs mb-1.5 mt-4" style={{ color: COLORS.textMuted }}>
+          הגבלות תזונה / אלרגיות
+        </label>
+        <input
+          value={dietary}
+          onChange={(e) => setDietary(e.target.value)}
+          placeholder="אין / פרט/י"
+          className="w-full rounded-xl px-4 py-3 text-sm outline-none"
+          style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
+        />
+
+        <label className="block text-xs mb-1.5 mt-4" style={{ color: COLORS.textMuted }}>
+          כמות משתתפים
+        </label>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setTicketCount((c) => Math.max(1, c - 1))}
+              className="w-10 h-10 rounded-xl text-lg"
+              style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
+            >
+              -
+            </button>
+            <span className="text-lg font-semibold w-6 text-center">{ticketCount}</span>
+            <button
+              onClick={() => setTicketCount((c) => c + 1)}
+              className="w-10 h-10 rounded-xl text-lg"
+              style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
+            >
+              +
+            </button>
+          </div>
+          {event.price && (
+            <span className="text-sm font-semibold" style={{ color: COLORS.accent }}>
+              סה״כ לתשלום: {Number(event.price) * ticketCount} ₪
+            </span>
+          )}
+        </div>
+
+        {ticketCount > 1 && (
+          <div className="mt-4 flex flex-col gap-3">
+            {ticketDetails.map((t, i) => (
+              <div
+                key={i}
+                className="rounded-xl p-3"
+                style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
+              >
+                <p className="text-xs mb-2" style={{ color: COLORS.textMuted }}>
+                  משתתף/ת {i + 2} — פרטים
+                </p>
+                <input
+                  value={t.name}
+                  onChange={(e) => updateTicketDetail(i, "name", e.target.value)}
+                  placeholder="שם מלא"
+                  className="w-full rounded-lg px-3 py-2 text-sm outline-none mb-2"
+                  style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}` }}
+                />
+                <input
+                  value={t.phone}
+                  onChange={(e) => updateTicketDetail(i, "phone", e.target.value)}
+                  placeholder="מספר טלפון"
+                  type="tel"
+                  className="w-full rounded-lg px-3 py-2 text-sm outline-none mb-2"
+                  style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}` }}
+                />
+                <div className="mb-2">
+                  <BirthDatePicker
+                    day={t.birthDay}
+                    month={t.birthMonth}
+                    year={t.birthYear}
+                    onDayChange={(v) => updateTicketDetail(i, "birthDay", v)}
+                    onMonthChange={(v) => updateTicketDetail(i, "birthMonth", v)}
+                    onYearChange={(v) => updateTicketDetail(i, "birthYear", v)}
+                  />
+                </div>
+                <input
+                  value={t.address}
+                  onChange={(e) => updateTicketDetail(i, "address", e.target.value)}
+                  placeholder="כתובת מגורים"
+                  className="w-full rounded-lg px-3 py-2 text-sm outline-none mb-2"
+                  style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}` }}
+                />
+                <input
+                  value={t.dietary}
+                  onChange={(e) => updateTicketDetail(i, "dietary", e.target.value)}
+                  placeholder="הגבלות תזונה / אלרגיות"
+                  className="w-full rounded-lg px-3 py-2 text-sm outline-none"
+                  style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}` }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-5">
+          <span className="flex items-center gap-1.5 text-xs mb-2" style={{ color: COLORS.textMuted }}>
+            <Bus size={13} /> נקודת עלייה
+          </span>
+          <div className="relative">
+            <select
+              value={pickup}
+              onChange={(e) => setPickup(e.target.value)}
+              className="w-full appearance-none rounded-xl px-4 py-3 text-sm outline-none"
+              style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}`, color: COLORS.textDark }}
+            >
+              <option value="" disabled>
+                בחר/י נקודת עלייה
+              </option>
+              {(event.pickup_points || []).map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+              style={{ color: COLORS.accent }}
+            />
+          </div>
+        </div>
+
+        {error && (
+          <p className="text-xs mt-3" style={{ color: "#B3261E" }}>
+            {error}
+          </p>
+        )}
+
+        <button
+          disabled={!canSubmit || saving}
+          onClick={handleSubmit}
+          className="w-full mt-6 rounded-xl py-3.5 text-sm font-bold"
+          style={
+            canSubmit
+              ? { background: COLORS.primary, color: COLORS.primaryText }
+              : { background: "rgba(0,0,0,0.08)", color: "rgba(0,0,0,0.3)" }
+          }
+        >
+          {saving ? "שומר..." : "שמור/י את הפרטים שלי"}
+        </button>
+      </>
+    );
+  }
+
   return (
     <div
       className="min-h-screen pb-28"
@@ -367,28 +597,17 @@ export default function GolanTripView({ event }) {
         <p className="text-xs font-medium mb-1" style={{ color: COLORS.accent }}>
           טיול קבוצתי
         </p>
-        <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold m-0" style={{ color: COLORS.textDark }}>
+        <div className="flex items-start justify-between gap-3">
+          <h1 className="text-2xl font-semibold m-0 pt-2" style={{ color: COLORS.textDark }}>
             {event.name || "טיול לגולן"}
           </h1>
-          <img src={LOGO_URL} alt="לוגו" className="w-14 h-14 object-contain flex-shrink-0" />
+          <img src={LOGO_URL} alt="לוגו" className="w-24 h-24 object-contain flex-shrink-0" />
         </div>
         {event.event_date && (
-          <p className="text-sm mt-1" style={{ color: COLORS.textMuted }}>
+          <p className="text-sm mt-2" style={{ color: COLORS.textMuted }}>
             {event.event_date}
           </p>
         )}
-      </div>
-
-      {/* כפתור מעבר לרישום */}
-      <div className="px-5 mb-6">
-        <button
-          onClick={scrollToForm}
-          className="w-full rounded-xl py-4 text-[17px] font-bold"
-          style={{ background: COLORS.primary, color: COLORS.primaryText }}
-        >
-          מעבר לרישום
-        </button>
       </div>
 
       {/* מיקום לינה */}
@@ -421,11 +640,16 @@ export default function GolanTripView({ event }) {
         </div>
       )}
 
-      {/* כפתור מעבר לרישום נוסף - ממש לפני הלוז, במבנה "רישום - לוז - רישום" */}
-      <div className="px-5 mb-6">
+      {/* טופס הרשמה - עליון */}
+      <div id="golan-registration-form-top" className="px-5">
+        {renderRegistrationForm()}
+      </div>
+
+      {/* כפתור מעבר לרישום - חוזר לטופס העליון */}
+      <div className="px-5 my-6">
         <button
-          onClick={scrollToForm}
-          className="w-full rounded-xl py-4 text-[17px] font-bold"
+          onClick={scrollToTopForm}
+          className="w-full rounded-xl py-3.5 text-[17px] font-bold"
           style={{ background: COLORS.primary, color: COLORS.primaryText }}
         >
           מעבר לרישום
@@ -433,232 +657,27 @@ export default function GolanTripView({ event }) {
       </div>
 
       {/* לוז */}
-      <div className="px-5 mb-8">
+      <div className="px-5 mb-6">
         <h2 className="text-lg font-semibold mb-3" style={{ color: COLORS.textDark }}>
           לוז הטיול
         </h2>
         <ScheduleAccordion />
       </div>
 
-      {/* טופס הרשמה */}
-      <div id="golan-registration-form" className="px-5">
-        {!submitted ? (
-          <>
-            <h2 className="text-lg font-semibold mb-4" style={{ color: COLORS.textDark }}>
-              הרשמה לטיול
-            </h2>
+      {/* כפתור מעבר לרישום - ממשיך לטופס התחתון */}
+      <div className="px-5 mb-6">
+        <button
+          onClick={scrollToBottomForm}
+          className="w-full rounded-xl py-3.5 text-[17px] font-bold"
+          style={{ background: COLORS.primary, color: COLORS.primaryText }}
+        >
+          מעבר לרישום
+        </button>
+      </div>
 
-            <label className="block text-xs mb-1.5" style={{ color: COLORS.textMuted }}>
-              שם מלא
-            </label>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="איך קוראים לך?"
-              className="w-full rounded-xl px-4 py-3 text-sm outline-none"
-              style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
-            />
-
-            <label className="block text-xs mb-1.5 mt-4" style={{ color: COLORS.textMuted }}>
-              מספר טלפון
-            </label>
-            <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="050-1234567"
-              type="tel"
-              className="w-full rounded-xl px-4 py-3 text-sm outline-none"
-              style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
-            />
-
-            <label className="block text-xs mb-1.5 mt-4" style={{ color: COLORS.textMuted }}>
-              תאריך לידה
-            </label>
-            <BirthDatePicker
-              day={birthDay}
-              month={birthMonth}
-              year={birthYear}
-              onDayChange={setBirthDay}
-              onMonthChange={setBirthMonth}
-              onYearChange={setBirthYear}
-            />
-
-            <label className="block text-xs mb-1.5 mt-4" style={{ color: COLORS.textMuted }}>
-              כתובת מגורים
-            </label>
-            <input
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="עיר, רחוב ומספר"
-              className="w-full rounded-xl px-4 py-3 text-sm outline-none"
-              style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
-            />
-
-            <label className="block text-xs mb-1.5 mt-4" style={{ color: COLORS.textMuted }}>
-              הגבלות תזונה / אלרגיות
-            </label>
-            <input
-              value={dietary}
-              onChange={(e) => setDietary(e.target.value)}
-              placeholder="אין / פרט/י"
-              className="w-full rounded-xl px-4 py-3 text-sm outline-none"
-              style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
-            />
-
-            <label className="block text-xs mb-1.5 mt-4" style={{ color: COLORS.textMuted }}>
-              כמות משתתפים
-            </label>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setTicketCount((c) => Math.max(1, c - 1))}
-                  className="w-10 h-10 rounded-xl text-lg"
-                  style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
-                >
-                  -
-                </button>
-                <span className="text-lg font-semibold w-6 text-center">{ticketCount}</span>
-                <button
-                  onClick={() => setTicketCount((c) => c + 1)}
-                  className="w-10 h-10 rounded-xl text-lg"
-                  style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
-                >
-                  +
-                </button>
-              </div>
-              {event.price && (
-                <span className="text-sm font-semibold" style={{ color: COLORS.accent }}>
-                  סה״כ לתשלום: {Number(event.price) * ticketCount} ₪
-                </span>
-              )}
-            </div>
-
-            {ticketCount > 1 && (
-              <div className="mt-4 flex flex-col gap-3">
-                {ticketDetails.map((t, i) => (
-                  <div
-                    key={i}
-                    className="rounded-xl p-3"
-                    style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
-                  >
-                    <p className="text-xs mb-2" style={{ color: COLORS.textMuted }}>
-                      משתתף/ת {i + 2} — פרטים
-                    </p>
-                    <input
-                      value={t.name}
-                      onChange={(e) => updateTicketDetail(i, "name", e.target.value)}
-                      placeholder="שם מלא"
-                      className="w-full rounded-lg px-3 py-2 text-sm outline-none mb-2"
-                      style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}` }}
-                    />
-                    <input
-                      value={t.phone}
-                      onChange={(e) => updateTicketDetail(i, "phone", e.target.value)}
-                      placeholder="מספר טלפון"
-                      type="tel"
-                      className="w-full rounded-lg px-3 py-2 text-sm outline-none mb-2"
-                      style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}` }}
-                    />
-                    <div className="mb-2">
-                      <BirthDatePicker
-                        day={t.birthDay}
-                        month={t.birthMonth}
-                        year={t.birthYear}
-                        onDayChange={(v) => updateTicketDetail(i, "birthDay", v)}
-                        onMonthChange={(v) => updateTicketDetail(i, "birthMonth", v)}
-                        onYearChange={(v) => updateTicketDetail(i, "birthYear", v)}
-                      />
-                    </div>
-                    <input
-                      value={t.address}
-                      onChange={(e) => updateTicketDetail(i, "address", e.target.value)}
-                      placeholder="כתובת מגורים"
-                      className="w-full rounded-lg px-3 py-2 text-sm outline-none mb-2"
-                      style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}` }}
-                    />
-                    <input
-                      value={t.dietary}
-                      onChange={(e) => updateTicketDetail(i, "dietary", e.target.value)}
-                      placeholder="הגבלות תזונה / אלרגיות"
-                      className="w-full rounded-lg px-3 py-2 text-sm outline-none"
-                      style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}` }}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="mt-5">
-              <span className="flex items-center gap-1.5 text-xs mb-2" style={{ color: COLORS.textMuted }}>
-                <Bus size={13} /> נקודת עלייה
-              </span>
-              <div className="relative">
-                <select
-                  value={pickup}
-                  onChange={(e) => setPickup(e.target.value)}
-                  className="w-full appearance-none rounded-xl px-4 py-3 text-sm outline-none"
-                  style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}`, color: COLORS.textDark }}
-                >
-                  <option value="" disabled>
-                    בחר/י נקודת עלייה
-                  </option>
-                  {(event.pickup_points || []).map((p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown
-                  size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                  style={{ color: COLORS.accent }}
-                />
-              </div>
-            </div>
-
-            {error && (
-              <p className="text-xs mt-3" style={{ color: "#B3261E" }}>
-                {error}
-              </p>
-            )}
-
-            <button
-              disabled={!canSubmit || saving}
-              onClick={handleSubmit}
-              className="w-full mt-6 rounded-xl py-3.5 text-sm font-bold"
-              style={
-                canSubmit
-                  ? { background: COLORS.primary, color: COLORS.primaryText }
-                  : { background: "rgba(0,0,0,0.08)", color: "rgba(0,0,0,0.3)" }
-              }
-            >
-              {saving ? "שומר..." : "שמור/י את הפרטים שלי"}
-            </button>
-          </>
-        ) : (
-          <div
-            className="rounded-2xl p-5 flex flex-col items-center text-center gap-2"
-            style={{ background: COLORS.gradMorning, border: `1px solid ${COLORS.primary}` }}
-          >
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center"
-              style={{ background: COLORS.primary }}
-            >
-              <Check size={20} color="#fff" />
-            </div>
-            <p className="font-semibold" style={{ color: COLORS.textDark }}>
-              {`נרשמת בהצלחה! ניפגש ב${pickup}`}
-            </p>
-            {event.price && (
-              <p className="text-sm font-medium" style={{ color: COLORS.accent }}>
-                סכום לתשלום: {Number(event.price) * ticketCount} ₪
-              </p>
-            )}
-            <p className="text-xs" style={{ color: COLORS.textMuted }}>
-              נפתחה עבורך כרטיסייה עם דף התשלום. אם היא לא נפתחה - לחצו על הכפתור למטה.
-            </p>
-          </div>
-        )}
+      {/* טופס הרשמה - תחתון */}
+      <div id="golan-registration-form-bottom" className="px-5">
+        {renderRegistrationForm()}
       </div>
 
       {/* כפתור תשלום דביק בתחתית */}
