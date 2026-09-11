@@ -588,29 +588,25 @@ export default function GolanTripView({ event }) {
       className="min-h-screen pb-28"
       style={{ background: COLORS.bg, color: COLORS.textDark, fontFamily: "var(--font-heebo), sans-serif" }}
     >
-      {/* כותרת עליונה - עוטפת בכרית ירוקה בהירה */}
-      <div className="px-5 pt-6 pb-4">
-        <div className="rounded-2xl p-5" style={{ background: COLORS.headerCard }}>
-          <p className="text-xs font-medium mb-1" style={{ color: COLORS.primary }}>
-            טיול קבוצתי
-          </p>
-          <div className="flex items-start justify-between gap-3">
-            <h1 className="text-2xl font-semibold m-0 pt-2" style={{ color: COLORS.textDark }}>
-              {event.name || "טיול לגולן"}
-            </h1>
-            <div
-              className="w-24 h-24 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{ background: "#fff" }}
-            >
-              <img src={LOGO_URL} alt="לוגו" className="w-16 h-16 object-contain" />
-            </div>
-          </div>
-          {event.event_date && (
-            <p className="text-sm mt-2" style={{ color: COLORS.textDark }}>
-              {event.event_date}
-            </p>
-          )}
+      {/* כותרת עליונה - ברוחב מלא, גרדיאנט ירוק שדוהה לבז' הרגיל של האתר */}
+      <div
+        className="px-5 pt-8 pb-6"
+        style={{ background: `linear-gradient(180deg, ${COLORS.primary} 0%, #6B8A4E 45%, ${COLORS.bg} 100%)` }}
+      >
+        <p className="text-xs font-medium mb-1" style={{ color: "#E8EEDD" }}>
+          טיול קבוצתי
+        </p>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-2xl font-semibold m-0" style={{ color: "#fff" }}>
+            {event.name || "טיול לגולן"}
+          </h1>
+          <img src={LOGO_URL} alt="לוגו" className="w-20 h-20 object-contain flex-shrink-0" />
         </div>
+        {event.event_date && (
+          <p className="text-sm mt-2" style={{ color: "#EDF0E2" }}>
+            {event.event_date}
+          </p>
+        )}
       </div>
 
       {/* מיקום לינה */}
