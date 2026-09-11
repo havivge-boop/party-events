@@ -21,6 +21,7 @@ const COLORS = {
   gradMorning: "#EDF0E2",
   gradMid: "#F3E4D3",
   gradEvening: "#E8D3D6",
+  headerCard: "#C3D9A0", // ירוק רווי יותר לכרית הכותרת
 };
 
 // ===== נתוני הלוז - מעודכן לפי הלו"ז הרשמי =====
@@ -30,7 +31,7 @@ const SCHEDULE = [
     date: "8.10",
     activities: [
       { time: "06:30", title: "יציאה מאשדוד", icon: "🚌" },
-      { time: "07:00", title: "הגעה לרמלה", icon: "🚏" },
+      { time: "07:00", title: "יציאה מרמלה", icon: "🚏" },
       { time: "10:15", title: "מסלול מים במג'רסה", icon: "💧" },
       { time: "12:30", title: "ארוחת צהריים - פלאפל", icon: "🧆" },
       { time: "14:15", title: "טיול רייזר ב\"רייזר הגולן\"", icon: "🚙" },
@@ -363,7 +364,7 @@ export default function GolanTripView({ event }) {
 
   // כל תוכן טופס ההרשמה - מוגדר פעם אחת, נקרא פעמיים (לפני ואחרי הלוז)
   // כך שאין כפילות קוד, ושני המופעים תמיד מסונכרנים לאותו state
-  function renderRegistrationForm() {
+  function renderRegistrationForm(position) {
     if (submitted) {
       return (
         <div
@@ -396,6 +397,17 @@ export default function GolanTripView({ event }) {
         <h2 className="text-lg font-semibold mb-4" style={{ color: COLORS.textDark }}>
           הרשמה לטיול
         </h2>
+
+        {name.trim().length > 0 && (
+          <div
+            className="rounded-lg px-3 py-2 mb-4 text-xs font-medium"
+            style={{ background: COLORS.gradMorning, color: COLORS.primary }}
+          >
+            {position === "top"
+              ? "הפרטים שלך נשמרים אוטומטית גם בטופס שלמטה - אין צורך למלא שוב, פשוט שמרו כאן."
+              : "הפרטים שלך כבר מוזנים כאן אוטומטית מהטופס שלמעלה - אין צורך למלא שוב."}
+          </div>
+        )}
 
         <label className="block text-xs mb-1.5" style={{ color: COLORS.textMuted }}>
           שם מלא
@@ -541,28 +553,12 @@ export default function GolanTripView({ event }) {
           <span className="flex items-center gap-1.5 text-xs mb-2" style={{ color: COLORS.textMuted }}>
             <Bus size={13} /> נקודת עלייה
           </span>
-          <div className="relative">
-            <select
-              value={pickup}
-              onChange={(e) => setPickup(e.target.value)}
-              className="w-full appearance-none rounded-xl px-4 py-3 text-sm outline-none"
-              style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}`, color: COLORS.textDark }}
-            >
-              <option value="" disabled>
-                בחר/י נקודת עלייה
-              </option>
-              {(event.pickup_points || []).map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
-            <ChevronDown
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-              style={{ color: COLORS.accent }}
-            />
-          </div>
+          <ListPicker
+            value={pickup}
+            onChange={setPickup}
+            options={event.pickup_points || []}
+            placeholder="בחר/י נקודת עלייה"
+          />
         </div>
 
         {error && (
@@ -592,22 +588,29 @@ export default function GolanTripView({ event }) {
       className="min-h-screen pb-28"
       style={{ background: COLORS.bg, color: COLORS.textDark, fontFamily: "var(--font-heebo), sans-serif" }}
     >
-      {/* כותרת עליונה */}
-      <div className="px-5 pt-8 pb-4">
-        <p className="text-xs font-medium mb-1" style={{ color: COLORS.accent }}>
-          טיול קבוצתי
-        </p>
-        <div className="flex items-start justify-between gap-3">
-          <h1 className="text-2xl font-semibold m-0 pt-2" style={{ color: COLORS.textDark }}>
-            {event.name || "טיול לגולן"}
-          </h1>
-          <img src={LOGO_URL} alt="לוגו" className="w-24 h-24 object-contain flex-shrink-0" />
-        </div>
-        {event.event_date && (
-          <p className="text-sm mt-2" style={{ color: COLORS.textMuted }}>
-            {event.event_date}
+      {/* כותרת עליונה - עוטפת בכרית ירוקה בהירה */}
+      <div className="px-5 pt-6 pb-4">
+        <div className="rounded-2xl p-5" style={{ background: COLORS.headerCard }}>
+          <p className="text-xs font-medium mb-1" style={{ color: COLORS.primary }}>
+            טיול קבוצתי
           </p>
-        )}
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="text-2xl font-semibold m-0 pt-2" style={{ color: COLORS.textDark }}>
+              {event.name || "טיול לגולן"}
+            </h1>
+            <div
+              className="w-24 h-24 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{ background: "#fff" }}
+            >
+              <img src={LOGO_URL} alt="לוגו" className="w-16 h-16 object-contain" />
+            </div>
+          </div>
+          {event.event_date && (
+            <p className="text-sm mt-2" style={{ color: COLORS.textDark }}>
+              {event.event_date}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* מיקום לינה */}
@@ -642,7 +645,7 @@ export default function GolanTripView({ event }) {
 
       {/* טופס הרשמה - עליון */}
       <div id="golan-registration-form-top" className="px-5">
-        {renderRegistrationForm()}
+        {renderRegistrationForm("top")}
       </div>
 
       {/* כפתור מעבר לרישום - חוזר לטופס העליון */}
@@ -677,7 +680,7 @@ export default function GolanTripView({ event }) {
 
       {/* טופס הרשמה - תחתון */}
       <div id="golan-registration-form-bottom" className="px-5">
-        {renderRegistrationForm()}
+        {renderRegistrationForm("bottom")}
       </div>
 
       {/* כפתור תשלום דביק בתחתית */}
