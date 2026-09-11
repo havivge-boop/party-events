@@ -588,22 +588,22 @@ export default function GolanTripView({ event }) {
       className="min-h-screen pb-28"
       style={{ background: COLORS.bg, color: COLORS.textDark, fontFamily: "var(--font-heebo), sans-serif" }}
     >
-      {/* כותרת עליונה - ברוחב מלא, גרדיאנט ירוק שדוהה לבז' הרגיל של האתר */}
+      {/* כותרת עליונה - ברוחב מלא, אותו גרדיאנט עדין בדיוק כמו כרטיסי הלוז */}
       <div
-        className="px-5 pt-8 pb-6"
-        style={{ background: `linear-gradient(180deg, ${COLORS.primary} 0%, ${COLORS.dusk} 55%, ${COLORS.bg} 100%)` }}
+        className="px-5 pt-8 pb-7"
+        style={{ background: `linear-gradient(180deg, ${COLORS.gradMorning} 0%, ${COLORS.gradMid} 55%, ${COLORS.gradEvening} 100%)` }}
       >
-        <p className="text-xs font-medium mb-1" style={{ color: "#E8EEDD" }}>
+        <p className="text-xs font-medium mb-1" style={{ color: COLORS.primary }}>
           טיול קבוצתי
         </p>
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold m-0" style={{ color: "#fff" }}>
+          <h1 className="text-2xl font-semibold m-0" style={{ color: COLORS.textDark }}>
             {event.name || "טיול לגולן"}
           </h1>
           <img src={LOGO_URL} alt="לוגו" className="w-20 h-20 object-contain flex-shrink-0" />
         </div>
         {event.event_date && (
-          <p className="text-sm mt-2" style={{ color: "#EDF0E2" }}>
+          <p className="text-sm mt-2" style={{ color: COLORS.textMuted }}>
             {event.event_date}
           </p>
         )}
