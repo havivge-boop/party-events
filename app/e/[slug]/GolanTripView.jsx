@@ -591,7 +591,7 @@ export default function GolanTripView({ event }) {
       {/* כותרת עליונה - ברוחב מלא, גרדיאנט ירוק שדוהה לבז' הרגיל של האתר */}
       <div
         className="px-5 pt-8 pb-6"
-        style={{ background: `linear-gradient(180deg, ${COLORS.primary} 0%, ${COLORS.primary} 70%, ${COLORS.bg} 100%)` }}
+        style={{ background: `linear-gradient(180deg, ${COLORS.primary} 0%, ${COLORS.dusk} 55%, ${COLORS.bg} 100%)` }}
       >
         <p className="text-xs font-medium mb-1" style={{ color: "#E8EEDD" }}>
           טיול קבוצתי
