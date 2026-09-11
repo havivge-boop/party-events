@@ -394,7 +394,7 @@ export default function GolanTripView({ event }) {
 
     return (
       <>
-        <h2 className="text-lg font-semibold mb-4" style={{ color: COLORS.textDark }}>
+        <h2 className="text-lg font-semibold mb-4" style={{ color: COLORS.accent }}>
           הרשמה לטיול
         </h2>
 
@@ -591,7 +591,7 @@ export default function GolanTripView({ event }) {
       {/* כותרת עליונה - ברוחב מלא, גרדיאנט ירוק שדוהה לבז' הרגיל של האתר */}
       <div
         className="px-5 pt-8 pb-6"
-        style={{ background: `linear-gradient(180deg, ${COLORS.primary} 0%, #6B8A4E 45%, ${COLORS.bg} 100%)` }}
+        style={{ background: `linear-gradient(180deg, ${COLORS.accent} 0%, ${COLORS.accent} 70%, ${COLORS.bg} 100%)` }}
       >
         <p className="text-xs font-medium mb-1" style={{ color: "#E8EEDD" }}>
           טיול קבוצתי
