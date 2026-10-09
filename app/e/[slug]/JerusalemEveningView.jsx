@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-// ⚠️ לוודא שזה אותו ייבוא בדיוק כמו בראש הקובץ GolanTripView.jsx
-import { supabase } from "@/lib/supabase";
+import { supabase } from "../../../lib/supabase";
 
 const C = {
   bg: "#FBF7FF",
