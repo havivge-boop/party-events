@@ -28,8 +28,8 @@ export default function AdminPage() {
     try {
       await api(passInput, { action: "login" });
       setPassword(passInput);
-    } catch {
-      setError("סיסמה שגויה");
+        } catch (e) {
+      setError(e.message === "unauthorized" ? "סיסמה שגויה" : "שגיאה: " + e.message);
     }
   }
 
