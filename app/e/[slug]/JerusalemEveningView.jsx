@@ -234,7 +234,7 @@ export default function JerusalemEveningView({ event }) {
           <span className="rounded-full bg-white/90 px-3 py-1 text-[13px] font-bold">אירוע קהילתי</span>
           <h1 className="mt-3 text-4xl font-black text-white">{event.name || "ערב בירושלים"}</h1>
           <p className="mt-1 text-white/90">חמישי בערב · לגילאי 18-28</p>
-          {event.event_date && <p className="mt-1 font-bold text-white">{event.event_date}</p>}
+          {event.event_date && <p className="mt-1 font-bold text-white">{new Date(event.event_date).toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" })}</p>}
         </div>
       </header>
 
