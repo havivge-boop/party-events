@@ -1,6 +1,7 @@
 import { supabase } from "../../../lib/supabase";
 import EventView from "./EventView";
 import GolanTripView from "./GolanTripView";
+import JerusalemEveningView from "./JerusalemEveningView";
 
 export default async function EventPage({ params }) {
   const { slug } = await params;
@@ -22,6 +23,10 @@ export default async function EventPage({ params }) {
   // בוחרים איזה עיצוב להציג לפי סוג האירוע
   if (slug === "golan-trip") {
     return <GolanTripView event={event} />;
+  }
+
+  if (slug === "jerusalem-evening") {
+    return <JerusalemEveningView event={event} />;
   }
 
   return <EventView event={event} />;
