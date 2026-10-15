@@ -213,13 +213,11 @@ function AdminDashboard({ password }) {
           r.pickup,
           r.paid ? "כן" : "לא",
         ]);
-        row.eachCell({ includeEmpty: true }, (cell) => {
-          cell.fill = {
-            type: "pattern",
-            pattern: "solid",
-            fgColor: { argb: r.paid ? "FFC6EFCE" : "FFFFC7CE" },
-          };
-        });
+                row.getCell(head.length).fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: r.paid ? "FFC6EFCE" : "FFFFC7CE" },
+        };
         row.getCell(head.length).font = {
           bold: true,
           color: { argb: r.paid ? "FF006100" : "FF9C0006" },
@@ -477,7 +475,7 @@ function AdminDashboard({ password }) {
               </thead>
               <tbody>
                 {flatRows.map((r) => (
-                  <tr key={r.key} className={`border-t border-white/10 ${r.paid ? "bg-green-500/15" : "bg-red-500/15"}`}>
+                  <tr key={r.key} className="border-t border-white/10">
                     <td className="p-3">{r.name || "—"}</td>
                     <td className="p-3">{r.phone || "—"}</td>
                     <td className="p-3">{r.birthDate || "—"}</td>
@@ -494,7 +492,7 @@ function AdminDashboard({ password }) {
                           className="h-5 w-5 accent-green-400 ml-2 align-middle"
                         />
                       )}
-                      <span className={`font-bold ${r.paid ? "text-green-400" : "text-red-400"}`}>
+                      <span className={`rounded-md px-2 py-1 text-xs font-bold ${r.paid ? "bg-green-500/25 text-green-300" : "bg-red-500/25 text-red-300"}`}>
                         {r.paid ? "שולם" : "לא שולם"}
                       </span>
                     </td>
