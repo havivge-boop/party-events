@@ -14,8 +14,8 @@ const C = {
 
 // ===== הלו"ז: כדי להחליף תמונה, ממלאים img בקישור. x/y = מיקום הנקודה על הקו =====
 const STOPS = [
-  { time: "18:00–20:30", title: 'קווסט "חפש את המטמון"', place: "רחוב יפו, מכיכר צה״ל עד מחנה יהודה", emoji: "🗺️", img: null, x: 75, y: 50 },
-  { time: "20:30", title: "ישיבה משותפת", place: "Taps & Tail", emoji: "🍹", img: null, x: 25, y: 150 },
+  { time: "19:00–20:30", title: 'קווסט "חפש את המטמון"', place: "רחוב יפו, מכיכר צה״ל עד מחנה יהודה", emoji: "🗺️", img: null, x: 75, y: 50 },
+  { time: "20:30", title: "ישיבה משותפת", place: "Tap & Tail", emoji: "🍹", img: null, x: 25, y: 150 },
   { time: "22:00", title: "ערב חופשי", place: "מחנה יהודה", emoji: "🏮", img: null, x: 75, y: 250 },
 ];
 
