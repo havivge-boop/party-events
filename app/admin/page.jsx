@@ -17,7 +17,6 @@ async function api(password, payload) {
 const pad = (n) => String(n).padStart(2, "0");
 const extraBirth = (t) =>
   t.birthDate || (t.birthYear ? `${t.birthYear}-${pad(t.birthMonth)}-${pad(t.birthDay)}` : "");
-const csvCell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
 
 export default function AdminPage() {
   const [password, setPassword] = useState(null);
@@ -63,7 +62,7 @@ function AdminDashboard({ password }) {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [guests, setGuests] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
-  const [onlyUnpaid, setOnlyUnpaid] = useState(false);
+  const [payFilter, setPayFilter] = useState("all"); // all | paid | unpaid
   const [editor, setEditor] = useState(null);
 
   const [form, setForm] = useState({
@@ -102,7 +101,7 @@ function AdminDashboard({ password }) {
   async function loadGuests(event) {
     setSelectedEvent(event);
     setActiveTab("all");
-    setOnlyUnpaid(false);
+    setPayFilter("all");
     await refreshGuests(event);
   }
 
@@ -134,7 +133,8 @@ function AdminDashboard({ password }) {
 
   // ===== בניית השורות =====
   const filtered = guests.filter((g) => {
-    if (onlyUnpaid && g.paid) return false;
+    if (payFilter === "paid" && !g.paid) return false;
+    if (payFilter === "unpaid" && g.paid) return false;
     if (activeTab === "all") return true;
     if (activeTab === "alone") return !g.needs_transport;
     return g.needs_transport && g.pickup_point === activeTab;
@@ -177,36 +177,68 @@ function AdminDashboard({ password }) {
   const totalPeople = filtered.reduce((sum, g) => sum + (g.ticket_count || 1), 0);
   const paidPeople = filtered.filter((g) => g.paid).reduce((sum, g) => sum + (g.ticket_count || 1), 0);
 
-  // ===== ייצוא לאקסל =====
-  function exportCsv() {
-    const head = [
-      "שם",
-      "טלפון",
-      "תאריך לידה",
-      "כתובת",
-      ...(showDietary ? ["הגבלות תזונה"] : []),
-      "מגיע/ה עם",
-      "הסעה",
-      "שולם",
-    ];
-    const lines = flatRows.map((r) => [
-      r.name,
-      `="${r.phone}"`,
-      r.birthDate,
-      r.address,
-      ...(showDietary ? [r.dietary] : []),
-      r.groupWith || "",
-      r.pickup,
-      r.paid ? "כן" : "לא",
-    ]);
-    const csv = "\uFEFF" + [head, ...lines].map((l) => l.map(csvCell).join(",")).join("\r\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${selectedEvent.slug}-registrants.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+  // ===== ייצוא לאקסל (xlsx אמיתי, עם צבעים) =====
+  async function exportXlsx() {
+    try {
+      const mod = await import("exceljs/dist/exceljs.min.js");
+      const ExcelJS = mod.default || mod;
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet("נרשמים", { views: [{ rightToLeft: true }] });
+
+      const head = [
+        "שם",
+        "טלפון",
+        "תאריך לידה",
+        "כתובת",
+        ...(showDietary ? ["הגבלות תזונה"] : []),
+        "מגיע/ה עם",
+        "הסעה",
+        "שולם",
+      ];
+      ws.addRow(head);
+      ws.getRow(1).font = { bold: true };
+      head.forEach((_, i) => {
+        ws.getColumn(i + 1).width = 18;
+      });
+      ws.getColumn(2).numFmt = "@";
+
+      flatRows.forEach((r) => {
+        const row = ws.addRow([
+          r.name,
+          String(r.phone),
+          String(r.birthDate),
+          r.address,
+          ...(showDietary ? [r.dietary] : []),
+          r.groupWith || "",
+          r.pickup,
+          r.paid ? "כן" : "לא",
+        ]);
+        row.eachCell({ includeEmpty: true }, (cell) => {
+          cell.fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: r.paid ? "FFC6EFCE" : "FFFFC7CE" },
+          };
+        });
+        row.getCell(head.length).font = {
+          bold: true,
+          color: { argb: r.paid ? "FF006100" : "FF9C0006" },
+        };
+      });
+
+      const buf = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buf], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${selectedEvent.slug}-registrants.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      alert("שגיאה בייצוא: " + e.message);
+    }
   }
 
   // ===== עריכה / הוספה / מחיקה =====
@@ -317,6 +349,24 @@ function AdminDashboard({ password }) {
     }
   }
 
+  const payBtn = (value, label) => (
+    <button
+      key={value}
+      onClick={() => setPayFilter(value)}
+      className={`px-3 py-2 rounded-lg text-xs font-bold ${
+        payFilter === value
+          ? value === "paid"
+            ? "bg-green-400 text-black"
+            : value === "unpaid"
+            ? "bg-red-400 text-black"
+            : "bg-white text-black"
+          : "bg-white/5 border border-white/10"
+      }`}
+    >
+      {label}
+    </button>
+  );
+
   return (
     <div className="min-h-screen bg-[#0B0B10] text-white px-5 py-8 max-w-lg mx-auto">
       <h1 className="text-xl font-bold mb-6">ניהול אירועים</h1>
@@ -392,21 +442,21 @@ function AdminDashboard({ password }) {
           <div className="flex flex-wrap items-center gap-4 mb-3 text-xs text-white/60">
             <span>הרשמות: <b className="text-white">{filtered.length}</b></span>
             <span>סה״כ אנשים: <b className="text-white">{totalPeople}</b></span>
-            <span>שילמו: <b className="text-[#C6FF3E]">{paidPeople}</b> מתוך {totalPeople}</span>
+            <span>שילמו: <b className="text-green-400">{paidPeople}</b> מתוך {totalPeople}</span>
           </div>
 
           <div className="flex flex-wrap gap-2 mb-3">
-            <button onClick={exportCsv} className="px-3 py-2 rounded-lg text-xs font-bold bg-[#C6FF3E] text-black">
+            {payBtn("all", "כולם")}
+            {payBtn("paid", "שילמו")}
+            {payBtn("unpaid", "לא שילמו")}
+          </div>
+
+          <div className="flex flex-wrap gap-2 mb-3">
+            <button onClick={exportXlsx} className="px-3 py-2 rounded-lg text-xs font-bold bg-[#C6FF3E] text-black">
               ייצוא לאקסל
             </button>
             <button onClick={openAdd} className="px-3 py-2 rounded-lg text-xs font-bold bg-white text-black">
               + הוספת נרשם
-            </button>
-            <button
-              onClick={() => setOnlyUnpaid(!onlyUnpaid)}
-              className={`px-3 py-2 rounded-lg text-xs font-bold ${onlyUnpaid ? "bg-red-400 text-black" : "bg-white/5 border border-white/10"}`}
-            >
-              {onlyUnpaid ? "מציג רק מי שלא שילם" : "הצג רק מי שלא שילם"}
             </button>
           </div>
 
@@ -427,7 +477,7 @@ function AdminDashboard({ password }) {
               </thead>
               <tbody>
                 {flatRows.map((r) => (
-                  <tr key={r.key} className="border-t border-white/10">
+                  <tr key={r.key} className={`border-t border-white/10 ${r.paid ? "bg-green-500/15" : "bg-red-500/15"}`}>
                     <td className="p-3">{r.name || "—"}</td>
                     <td className="p-3">{r.phone || "—"}</td>
                     <td className="p-3">{r.birthDate || "—"}</td>
@@ -435,17 +485,18 @@ function AdminDashboard({ password }) {
                     {showDietary && <td className="p-3">{r.dietary || "—"}</td>}
                     <td className="p-3 text-white/50">{r.groupWith || "—"}</td>
                     <td className="p-3">{r.pickup || "—"}</td>
-                    <td className="p-3">
-                      {r.idx === null ? (
+                    <td className="p-3 whitespace-nowrap">
+                      {r.idx === null && (
                         <input
                           type="checkbox"
                           checked={r.paid}
                           onChange={() => togglePaid(r)}
-                          className="h-5 w-5 accent-[#C6FF3E]"
+                          className="h-5 w-5 accent-green-400 ml-2 align-middle"
                         />
-                      ) : (
-                        <span className="text-white/40">{r.paid ? "✓" : "—"}</span>
                       )}
+                      <span className={`font-bold ${r.paid ? "text-green-400" : "text-red-400"}`}>
+                        {r.paid ? "שולם" : "לא שולם"}
+                      </span>
                     </td>
                     <td className="p-3 whitespace-nowrap">
                       <button onClick={() => openEdit(r)} className="text-xs text-white/70 underline ml-3">ערוך</button>
@@ -520,4 +571,4 @@ function Field({ label, value, onChange, placeholder, textarea }) {
       )}
     </div>
   );
-}
+          }
