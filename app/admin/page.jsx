@@ -28,7 +28,7 @@ export default function AdminPage() {
     try {
       await api(passInput, { action: "login" });
       setPassword(passInput);
-        } catch (e) {
+    } catch (e) {
       setError(e.message === "unauthorized" ? "סיסמה שגויה" : "שגיאה: " + e.message);
     }
   }
@@ -63,6 +63,7 @@ function AdminDashboard({ password }) {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [guests, setGuests] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
+  const [onlyUnpaid, setOnlyUnpaid] = useState(false);
   const [editor, setEditor] = useState(null);
 
   const [form, setForm] = useState({
@@ -101,6 +102,7 @@ function AdminDashboard({ password }) {
   async function loadGuests(event) {
     setSelectedEvent(event);
     setActiveTab("all");
+    setOnlyUnpaid(false);
     await refreshGuests(event);
   }
 
@@ -121,8 +123,18 @@ function AdminDashboard({ password }) {
     }
   }
 
+  async function togglePaid(row) {
+    try {
+      await api(password, { action: "update", id: row.guest.id, data: { paid: !row.guest.paid } });
+      await refreshGuests(selectedEvent);
+    } catch (e) {
+      alert("שגיאה: " + e.message);
+    }
+  }
+
   // ===== בניית השורות =====
   const filtered = guests.filter((g) => {
+    if (onlyUnpaid && g.paid) return false;
     if (activeTab === "all") return true;
     if (activeTab === "alone") return !g.needs_transport;
     return g.needs_transport && g.pickup_point === activeTab;
@@ -141,6 +153,7 @@ function AdminDashboard({ password }) {
       address: g.address || "",
       dietary: g.dietary_restrictions || "",
       pickup,
+      paid: !!g.paid,
       groupWith: null,
     });
     (g.ticket_details || []).forEach((t, i) => {
@@ -154,6 +167,7 @@ function AdminDashboard({ password }) {
         address: t.address || "",
         dietary: t.dietary || "",
         pickup,
+        paid: !!g.paid,
         groupWith: g.name,
       });
     });
@@ -161,6 +175,7 @@ function AdminDashboard({ password }) {
 
   const showDietary = flatRows.some((r) => r.dietary);
   const totalPeople = filtered.reduce((sum, g) => sum + (g.ticket_count || 1), 0);
+  const paidPeople = filtered.filter((g) => g.paid).reduce((sum, g) => sum + (g.ticket_count || 1), 0);
 
   // ===== ייצוא לאקסל =====
   function exportCsv() {
@@ -172,6 +187,7 @@ function AdminDashboard({ password }) {
       ...(showDietary ? ["הגבלות תזונה"] : []),
       "מגיע/ה עם",
       "הסעה",
+      "שולם",
     ];
     const lines = flatRows.map((r) => [
       r.name,
@@ -181,6 +197,7 @@ function AdminDashboard({ password }) {
       ...(showDietary ? [r.dietary] : []),
       r.groupWith || "",
       r.pickup,
+      r.paid ? "כן" : "לא",
     ]);
     const csv = "\uFEFF" + [head, ...lines].map((l) => l.map(csvCell).join(",")).join("\r\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -372,17 +389,24 @@ function AdminDashboard({ password }) {
             </button>
           </div>
 
-          <div className="flex items-center gap-4 mb-3 text-xs text-white/60">
+          <div className="flex flex-wrap items-center gap-4 mb-3 text-xs text-white/60">
             <span>הרשמות: <b className="text-white">{filtered.length}</b></span>
             <span>סה״כ אנשים: <b className="text-white">{totalPeople}</b></span>
+            <span>שילמו: <b className="text-[#C6FF3E]">{paidPeople}</b> מתוך {totalPeople}</span>
           </div>
 
-          <div className="flex gap-2 mb-3">
+          <div className="flex flex-wrap gap-2 mb-3">
             <button onClick={exportCsv} className="px-3 py-2 rounded-lg text-xs font-bold bg-[#C6FF3E] text-black">
               ייצוא לאקסל
             </button>
             <button onClick={openAdd} className="px-3 py-2 rounded-lg text-xs font-bold bg-white text-black">
               + הוספת נרשם
+            </button>
+            <button
+              onClick={() => setOnlyUnpaid(!onlyUnpaid)}
+              className={`px-3 py-2 rounded-lg text-xs font-bold ${onlyUnpaid ? "bg-red-400 text-black" : "bg-white/5 border border-white/10"}`}
+            >
+              {onlyUnpaid ? "מציג רק מי שלא שילם" : "הצג רק מי שלא שילם"}
             </button>
           </div>
 
@@ -397,6 +421,7 @@ function AdminDashboard({ password }) {
                   {showDietary && <th className="p-3">הגבלות תזונה</th>}
                   <th className="p-3">מגיע/ה עם</th>
                   <th className="p-3">הסעה</th>
+                  <th className="p-3">שולם</th>
                   <th className="p-3"></th>
                 </tr>
               </thead>
@@ -410,6 +435,18 @@ function AdminDashboard({ password }) {
                     {showDietary && <td className="p-3">{r.dietary || "—"}</td>}
                     <td className="p-3 text-white/50">{r.groupWith || "—"}</td>
                     <td className="p-3">{r.pickup || "—"}</td>
+                    <td className="p-3">
+                      {r.idx === null ? (
+                        <input
+                          type="checkbox"
+                          checked={r.paid}
+                          onChange={() => togglePaid(r)}
+                          className="h-5 w-5 accent-[#C6FF3E]"
+                        />
+                      ) : (
+                        <span className="text-white/40">{r.paid ? "✓" : "—"}</span>
+                      )}
+                    </td>
                     <td className="p-3 whitespace-nowrap">
                       <button onClick={() => openEdit(r)} className="text-xs text-white/70 underline ml-3">ערוך</button>
                       <button onClick={() => deleteRow(r)} className="text-xs text-red-400 underline">מחק</button>
@@ -483,4 +520,4 @@ function Field({ label, value, onChange, placeholder, textarea }) {
       )}
     </div>
   );
-          }
+}
