@@ -241,7 +241,7 @@ export default function JerusalemEveningView({ event }) {
           <span className="rounded-full bg-white/90 px-3 py-1 text-[13px] font-bold">אירוע קהילתי</span>
                     <div className="mt-3 flex items-center justify-between gap-3">
             <h1 className="min-w-0 text-4xl font-black text-white">{event.name || "ערב בירושלים"}</h1>
-            <img src="https://i.postimg.cc/NFzjDpzM/1000159751-removebg-preview.png" alt="לוגו" className="h-16 w-16 shrink-0 object-contain" />
+            <img src="https://i.postimg.cc/NFzjDpzM/1000159751-removebg-preview.png" alt="לוגו" className="h-20 w-20 shrink-0 object-contain" />
           </div>
           <p className="mt-1 text-white/90">חמישי בערב · לגילאי 18-28</p>
           {event.event_date && <p className="mt-1 font-bold text-white">{new Date(event.event_date).toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" })}</p>}
