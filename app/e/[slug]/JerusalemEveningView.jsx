@@ -117,11 +117,11 @@ function RegForm({ top, f, setF, setCount, event, valid, saving, done, err, onSu
       <Person p={f.main} set={(main) => setF((s) => ({ ...s, main }))} />
 
       <div className="mt-4 flex items-center justify-between">
-        <span className="text-[15px] font-medium">כמות משתתפים</span>
+        <span className="text-[15px] font-medium">כמות משתתפים <span className="text-[12px]" style={{ color: C.muted }}>(עד 4)</span></span>
         <div className="flex items-center gap-3">
           <button type="button" onClick={() => setCount(f.count - 1)} className="h-9 w-9 rounded-full border border-black/10 text-xl">−</button>
           <span className="w-5 text-center font-bold">{f.count}</span>
-          <button type="button" onClick={() => setCount(f.count + 1)} className="h-9 w-9 rounded-full border border-black/10 text-xl">+</button>
+          <button type="button" disabled={f.count >= 4} onClick={() => setCount(f.count + 1)} className="h-9 w-9 rounded-full border border-black/10 text-xl disabled:opacity-30">+</button>
         </div>
       </div>
       {total && <p className="mt-1 text-sm" style={{ color: C.muted }}>סה״כ לתשלום: {total} ₪</p>}
@@ -208,7 +208,7 @@ export default function JerusalemEveningView({ event }) {
   const [err, setErr] = useState("");
 
   const setCount = (n) => setF((s) => {
-    const c = Math.max(1, n);
+    const c = Math.min(4, Math.max(1, n));
     const ex = s.extras.slice(0, c - 1);
     while (ex.length < c - 1) ex.push(emptyP());
     return { ...s, count: c, extras: ex };
