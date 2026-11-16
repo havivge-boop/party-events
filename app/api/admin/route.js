@@ -34,6 +34,23 @@ export async function POST(req) {
     case "delete":
       res = await db.from("guests").delete().eq("id", body.id);
       break;
+    case "deleteEvent": {
+      // מחיקת אירוע - דורש אימות כפול: הקלדת שם האירוע המדויק + הקלדת הסיסמה מחדש
+      if (body.confirmPassword !== process.env.ADMIN_PASSWORD) {
+        return NextResponse.json({ error: "הסיסמה לאימות שגויה" }, { status: 401 });
+      }
+      const ev = await db.from("events").select("id, name").eq("id", body.eventId).single();
+      if (ev.error || !ev.data) {
+        return NextResponse.json({ error: "האירוע לא נמצא" }, { status: 404 });
+      }
+      if ((body.confirmName || "").trim() !== (ev.data.name || "").trim()) {
+        return NextResponse.json({ error: "שם האירוע שהוקלד לא תואם" }, { status: 400 });
+      }
+      const g = await db.from("guests").delete().eq("event_id", ev.data.id);
+      if (g.error) return NextResponse.json({ error: g.error.message }, { status: 500 });
+      res = await db.from("events").delete().eq("id", ev.data.id);
+      break;
+    }
     default:
       return NextResponse.json({ error: "bad action" }, { status: 400 });
   }

@@ -64,6 +64,7 @@ function AdminDashboard({ password }) {
   const [activeTab, setActiveTab] = useState("all");
   const [payFilter, setPayFilter] = useState("all"); // all | paid | unpaid
   const [editor, setEditor] = useState(null);
+  const [eventDelete, setEventDelete] = useState(null); // { step, name, password, error, busy }
 
   const [form, setForm] = useState({
     slug: "",
@@ -347,6 +348,29 @@ function AdminDashboard({ password }) {
     }
   }
 
+  // ===== מחיקת אירוע (3 שלבים) =====
+  function openEventDelete() {
+    setEventDelete({ step: 1, name: "", password: "", error: "", busy: false });
+  }
+
+  async function confirmEventDelete() {
+    setEventDelete((d) => ({ ...d, busy: true, error: "" }));
+    try {
+      await api(password, {
+        action: "deleteEvent",
+        eventId: selectedEvent.id,
+        confirmName: eventDelete.name,
+        confirmPassword: eventDelete.password,
+      });
+      setEventDelete(null);
+      setSelectedEvent(null);
+      setGuests([]);
+      await loadEvents();
+    } catch (e) {
+      setEventDelete((d) => ({ ...d, busy: false, error: e.message }));
+    }
+  }
+
   const payBtn = (value, label) => (
     <button
       key={value}
@@ -406,7 +430,12 @@ function AdminDashboard({ password }) {
 
       {selectedEvent && (
         <div>
-          <h2 className="font-semibold mb-3">נרשמים ל-{selectedEvent.name}</h2>
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <h2 className="font-semibold">נרשמים ל-{selectedEvent.name}</h2>
+            <button onClick={openEventDelete} className="text-xs text-red-400 underline whitespace-nowrap">
+              מחיקת אירוע
+            </button>
+          </div>
 
           <div className="flex flex-wrap gap-2 mb-4">
             <button
@@ -504,6 +533,68 @@ function AdminDashboard({ password }) {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {eventDelete && selectedEvent && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center px-5">
+          <div className="w-full max-w-sm rounded-2xl bg-[#15151D] border border-red-500/40 p-4">
+            <p className="text-xs text-white/40 mb-1">שלב {eventDelete.step} מתוך 3</p>
+            <h3 className="font-semibold mb-3 text-red-300">מחיקת האירוע "{selectedEvent.name}"</h3>
+
+            {eventDelete.step === 1 && (
+              <p className="text-sm text-white/80">
+                המחיקה תסיר את האירוע ואת כל{" "}
+                <b className="text-white">{guests.reduce((s, g) => s + (g.ticket_count || 1), 0)}</b> הנרשמים אליו.
+                הקישור /e/{selectedEvent.slug} יפסיק לעבוד. אי אפשר לשחזר את זה.
+              </p>
+            )}
+
+            {eventDelete.step === 2 && (
+              <Field
+                label={`כדי לאשר, הקלד/י את שם האירוע בדיוק: ${selectedEvent.name}`}
+                value={eventDelete.name}
+                onChange={(v) => setEventDelete({ ...eventDelete, name: v })}
+              />
+            )}
+
+            {eventDelete.step === 3 && (
+              <div>
+                <label className="block text-xs text-white/50 mb-1">הקלד/י שוב את סיסמת המנהל</label>
+                <input
+                  type="password"
+                  value={eventDelete.password}
+                  onChange={(e) => setEventDelete({ ...eventDelete, password: e.target.value })}
+                  className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm outline-none"
+                />
+              </div>
+            )}
+
+            {eventDelete.error && <p className="text-xs text-red-400 mt-2">{eventDelete.error}</p>}
+
+            <div className="flex gap-2 mt-4">
+              {eventDelete.step < 3 ? (
+                <button
+                  disabled={eventDelete.step === 2 && eventDelete.name.trim() !== (selectedEvent.name || "").trim()}
+                  onClick={() => setEventDelete({ ...eventDelete, step: eventDelete.step + 1, error: "" })}
+                  className="flex-1 rounded-xl bg-red-500 text-white font-bold py-2.5 text-sm disabled:opacity-30"
+                >
+                  המשך
+                </button>
+              ) : (
+                <button
+                  disabled={!eventDelete.password || eventDelete.busy}
+                  onClick={confirmEventDelete}
+                  className="flex-1 rounded-xl bg-red-500 text-white font-bold py-2.5 text-sm disabled:opacity-30"
+                >
+                  {eventDelete.busy ? "מוחק..." : "מחק לצמיתות"}
+                </button>
+              )}
+              <button onClick={() => setEventDelete(null)} className="flex-1 rounded-xl bg-white/10 py-2.5 text-sm">
+                ביטול
+              </button>
+            </div>
           </div>
         </div>
       )}
