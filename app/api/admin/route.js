@@ -22,6 +22,13 @@ export async function POST(req) {
 
   let res;
   switch (body.action) {
+    case "summary":
+      // נתונים מצומצמים לכל הנרשמים - לסיכום בכרטיסי האירועים
+      res = await db.from("guests").select("event_id, ticket_count, paid");
+      break;
+    case "summary":
+      res = await db.from("guests").select("event_id, ticket_count, paid");
+      break;
     case "list":
       res = await db.from("guests").select("*").eq("event_id", body.eventId).order("created_at");
       break;
